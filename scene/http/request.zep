@@ -10,6 +10,7 @@ use Scene\http\Request\Exception;
 use Scene\Http\Request\File;
 use Scene\Di\InjectionAwareInterface;
 use Scene\DiInterface;
+use Scene\Di;
 use Scene\Text;
 use Scene\FilterInterface;
 
@@ -83,7 +84,13 @@ class Request implements RequestInterface, InjectionAwareInterface
      */
 	public function getDI() -> <DiInterface>
 	{
-		return this->_dependencyInjector;
+		var dependencyInjector;
+
+		let dependencyInjector = this->_dependencyInjector;
+		if typeof dependencyInjector != "object" {
+			let dependencyInjector = Di::getDefault();
+		}
+		return dependencyInjector;
 	}
 
 	/**
@@ -394,7 +401,9 @@ class Request implements RequestInterface, InjectionAwareInterface
 		} else {
 			let contentType = this->getContentType();
 			if !empty contentType {
-				return memstr(contentType, "application/soap+xml");
+				if (strpos(contentType, 'application/soap+xml') !== false) {
+                    return true;
+                }
 			}
 		}
 		return false;
@@ -573,7 +582,7 @@ class Request implements RequestInterface, InjectionAwareInterface
 		}
 
 		if typeof address == "string" {
-			if memstr(address, ",") {
+			if strpos(address, ",") !== false {
 				/**
 				 * The client address has multiples parts, only return the first part
 				 */
