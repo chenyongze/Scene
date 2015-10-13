@@ -9,5 +9,5 @@ namespace Scene\Debug;
  */
 class Exception extends \Scene\Exception
 {
-	
+    
 }

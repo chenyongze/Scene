@@ -43,117 +43,117 @@ use Scene\Di\Exception;
 abstract class Injectable implements InjectionAwareInterface, EventsAwareInterface
 {
 
-	/**
+    /**
      * Dependency Injector
      *
      * @var null|Scene\DiInterface
      * @access protected
     */
-	protected _dependencyInjector;
+    protected _dependencyInjector;
 
-	/**
+    /**
      * Events Manager
      *
      * @var null|Scene\Events\ManagerInterface
      * @access protected
     */
-	protected _eventsManager;
+    protected _eventsManager;
 
-	/**
+    /**
      * Sets the dependency injector
      *
      * @param \Scene\DiInterface $dependencyInjector
      * @throws Exception
      */
-	public function setDI(<DiInterface> dependencyInjector)
-	{
-		let this->_dependencyInjector = dependencyInjector;
-	}
+    public function setDI(<DiInterface> dependencyInjector)
+    {
+        let this->_dependencyInjector = dependencyInjector;
+    }
 
-	 /**
+     /**
      * Returns the internal dependency injector
      *
      * @return \Scene\DiInterface|null
      */
-	public function getDI() -> <DiInterface>
-	{
-		var dependencyInjector;
+    public function getDI() -> <DiInterface>
+    {
+        var dependencyInjector;
 
-		let dependencyInjector = this->_dependencyInjector;
-		if typeof dependencyInjector != "object" {
-			let dependencyInjector = Di::getDefault();
-		}
-		return dependencyInjector;
-	}
+        let dependencyInjector = this->_dependencyInjector;
+        if typeof dependencyInjector != "object" {
+            let dependencyInjector = Di::getDefault();
+        }
+        return dependencyInjector;
+    }
 
-	/**
+    /**
      * Sets the event manager
      *
      * @param \Scene\Events\ManagerInterface $eventsManager
      * @throws Exception
      */
-	public function setEventsManager(<ManagerInterface> eventsManager)
-	{
-		let this->_eventsManager = eventsManager;
-	}
+    public function setEventsManager(<ManagerInterface> eventsManager)
+    {
+        let this->_eventsManager = eventsManager;
+    }
 
-	/**
+    /**
      * Returns the internal event manager
      *
      * @return \Scene\Events\ManagerInterface|null
      */
-	public function getEventsManager() -> <ManagerInterface>
-	{
-		return this->_eventsManager;
-	}
+    public function getEventsManager() -> <ManagerInterface>
+    {
+        return this->_eventsManager;
+    }
 
-	/**
+    /**
      * Magic method __get
      *
      * @param string $propertyName
      * @return mixed
      */
-	public function __get(string! propertyName)
-	{
-		var dependencyInjector, service;
-		//var persistent;
+    public function __get(string! propertyName)
+    {
+        var dependencyInjector, service;
+        //var persistent;
 
-		let dependencyInjector = <DiInterface> this->_dependencyInjector;
-		if typeof dependencyInjector != "object" {
-			let dependencyInjector = Di::getDefault();
-			if typeof dependencyInjector != "object" {
-				throw new Exception("A dependency injection object is required to access the application services");
-			}
-		}
+        let dependencyInjector = <DiInterface> this->_dependencyInjector;
+        if typeof dependencyInjector != "object" {
+            let dependencyInjector = Di::getDefault();
+            if typeof dependencyInjector != "object" {
+                throw new Exception("A dependency injection object is required to access the application services");
+            }
+        }
 
-		/**
-		 * Fallback to the PHP userland if the cache is not available
-		 */
-		if dependencyInjector->has(propertyName) {
-			let service = dependencyInjector->getShared(propertyName);
-			let this->{propertyName} = service;
-			return service;
-		}
+        /**
+         * Fallback to the PHP userland if the cache is not available
+         */
+        if dependencyInjector->has(propertyName) {
+            let service = dependencyInjector->getShared(propertyName);
+            let this->{propertyName} = service;
+            return service;
+        }
 
-		if propertyName == "di" {
-			let this->{"di"} = dependencyInjector;
-			return dependencyInjector;
-		}
+        if propertyName == "di" {
+            let this->{"di"} = dependencyInjector;
+            return dependencyInjector;
+        }
 
-		/**
-		 * Accessing the persistent property will create a session bag on any class
-		 */
-		/*
-		if propertyName == "persistent" {
-			let persistent = <BagInterface> dependencyInjector->get("sessionBag", [get_class(this)]),
-				this->{"persistent"} = persistent;
-			return persistent;
-		}
-		*/
-		/**
-		 * A notice is shown if the property is not defined and isn't a valid service
-		 */
-		trigger_error("Access to undefined property " . propertyName);
-		return null;
-	}
+        /**
+         * Accessing the persistent property will create a session bag on any class
+         */
+        /*
+        if propertyName == "persistent" {
+            let persistent = <BagInterface> dependencyInjector->get("sessionBag", [get_class(this)]),
+                this->{"persistent"} = persistent;
+            return persistent;
+        }
+        */
+        /**
+         * A notice is shown if the property is not defined and isn't a valid service
+         */
+        trigger_error("Access to undefined property " . propertyName);
+        return null;
+    }
 }

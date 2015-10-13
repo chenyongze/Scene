@@ -12,85 +12,85 @@ use Scene\Events\Exception;
 class Event
 {
 
-	/**
+    /**
      * Type
      *
      * @var string|null
      * @access protected
     */
-	protected _type { set, get };
+    protected _type { set, get };
 
-	 /**
+     /**
      * Source
      *
      * @var object|null
      * @access protected
     */
-	protected _source { get };
+    protected _source { get };
 
-	/**
+    /**
      * Data
      *
      * @var mixed
      * @access protected
     */
-	protected _data { set, get };
+    protected _data { set, get };
 
-	/**
+    /**
      * Stopped
      *
      * @var boolean
      * @access protected
     */
-	protected _stopped = false;
+    protected _stopped = false;
 
-	/**
+    /**
      * Cancelable
      *
      * @var boolean
      * @access protected
     */
-	protected _cancelable = true { get };
+    protected _cancelable = true { get };
 
-	/**
-	 * Phalcon\Events\Event constructor
-	 *
-	 * @param string type
-	 * @param object source
-	 * @param mixed data
-	 * @param boolean cancelable
-	 */
-	public function __construct(string! type, source, data = null, boolean cancelable = true)
-	{
-		let this->_type = type,
-			this->_source = source;
+    /**
+     * Phalcon\Events\Event constructor
+     *
+     * @param string type
+     * @param object source
+     * @param mixed data
+     * @param boolean cancelable
+     */
+    public function __construct(string! type, source, data = null, boolean cancelable = true)
+    {
+        let this->_type = type,
+            this->_source = source;
 
-		if data !== null {
-			let this->_data = data;
-		}
+        if data !== null {
+            let this->_data = data;
+        }
 
-		if cancelable !== true {
-			let this->_cancelable = cancelable;
-		}
-	}
+        if cancelable !== true {
+            let this->_cancelable = cancelable;
+        }
+    }
 
-	/**
-	 * Stops the event preventing propagation
-	 */
-	public function stop() -> void
-	{
-		if !this->_cancelable {
-			throw new Exception("Trying to cancel a non-cancelable event");
-		}
+    /**
+     * Stops the event preventing propagation
+     */
+    public function stop() -> void
+    {
+        if !this->_cancelable {
+            throw new Exception("Trying to cancel a non-cancelable event");
+        }
 
-		let this->_stopped = true;
-	}
+        let this->_stopped = true;
+    }
 
-	/**
-	 * Check whether the event is currently stopped
-	 */
-	public function isStopped() -> boolean
-	{
-		return this->_stopped;
-	}
+    /**
+     * Check whether the event is currently stopped
+     */
+    public function isStopped() -> boolean
+    {
+        return this->_stopped;
+    }
 }

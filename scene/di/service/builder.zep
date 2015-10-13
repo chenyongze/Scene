@@ -16,7 +16,7 @@ use Scene\DiInterface;
  */
 class Builder
 {
-	/**
+    /**
      * Resolves a constructor/call parameter
      *
      * @param \Scene\DiInterface $dependencyInjector
@@ -25,74 +25,74 @@ class Builder
      * @return mixed
      * @throws Exception
      */
-	private function _buildParameter(<DiInterface> dependencyInjector, int position, array! argument)
-	{
-		var type, name, value, instanceArguments;
+    private function _buildParameter(<DiInterface> dependencyInjector, int position, array! argument)
+    {
+        var type, name, value, instanceArguments;
 
-		/**
-		 * All the arguments must have a type
-		 */
-		if !fetch type, argument["type"] {
-			throw new Exception("Argument at position " . position . " must have a type");
-		}
+        /**
+         * All the arguments must have a type
+         */
+        if !fetch type, argument["type"] {
+            throw new Exception("Argument at position " . position . " must have a type");
+        }
 
-		switch type {
+        switch type {
 
-			/**
-			 * If the argument type is 'service', we obtain the service from the DI
-			 */
-			case "service":
-				if !fetch name, argument["name"] {
-					throw new Exception("Service 'name' is required in parameter on position " . position);
-				}
-				if typeof dependencyInjector != "object" {
-					throw new Exception("The dependency injector container is not valid");
-				}
-				return dependencyInjector->get(name);
+            /**
+             * If the argument type is 'service', we obtain the service from the DI
+             */
+            case "service":
+                if !fetch name, argument["name"] {
+                    throw new Exception("Service 'name' is required in parameter on position " . position);
+                }
+                if typeof dependencyInjector != "object" {
+                    throw new Exception("The dependency injector container is not valid");
+                }
+                return dependencyInjector->get(name);
 
-			/**
-			 * If the argument type is 'parameter', we assign the value as it is
-			 */
-			case "parameter":
-				if !fetch value, argument["value"] {
-					throw new Exception("Service 'value' is required in parameter on position " . position);
-				}
-				return value;
+            /**
+             * If the argument type is 'parameter', we assign the value as it is
+             */
+            case "parameter":
+                if !fetch value, argument["value"] {
+                    throw new Exception("Service 'value' is required in parameter on position " . position);
+                }
+                return value;
 
-			/**
-			 * If the argument type is 'instance', we assign the value as it is
-			 */
-			case "instance":
+            /**
+             * If the argument type is 'instance', we assign the value as it is
+             */
+            case "instance":
 
-				if !fetch name, argument["className"] {
-					throw new Exception("Service 'className' is required in parameter on position " . position);
-				}
+                if !fetch name, argument["className"] {
+                    throw new Exception("Service 'className' is required in parameter on position " . position);
+                }
 
-				if typeof dependencyInjector != "object" {
-					throw new Exception("The dependency injector container is not valid");
-				}
+                if typeof dependencyInjector != "object" {
+                    throw new Exception("The dependency injector container is not valid");
+                }
 
-				if fetch instanceArguments, argument["arguments"] {
-					/**
-					 * Build the instance with arguments
-					 */
-					return dependencyInjector->get(name, instanceArguments);
-				}
+                if fetch instanceArguments, argument["arguments"] {
+                    /**
+                     * Build the instance with arguments
+                     */
+                    return dependencyInjector->get(name, instanceArguments);
+                }
 
-				/**
-				 * The instance parameter does not have arguments for its constructor
-				 */
-				return dependencyInjector->get(name);
+                /**
+                 * The instance parameter does not have arguments for its constructor
+                 */
+                return dependencyInjector->get(name);
 
-			default:
-				/**
-				 * Unknown parameter type
-				 */
-				throw new Exception("Unknown service type in parameter on position " . position);
-		}
-	}
+            default:
+                /**
+                 * Unknown parameter type
+                 */
+                throw new Exception("Unknown service type in parameter on position " . position);
+        }
+    }
 
-	/**
+    /**
      * Resolves an array of parameters
      *
      * @param \Phalcon\DiInterface $dependencyInjector
@@ -100,18 +100,18 @@ class Builder
      * @return array
      * @throws Exception
      */
-	private function _buildParameters(<DiInterface> dependencyInjector, array! arguments) -> array
-	{
-		var position, argument, buildArguments;
+    private function _buildParameters(<DiInterface> dependencyInjector, array! arguments) -> array
+    {
+        var position, argument, buildArguments;
 
-		let buildArguments = [];
-		for position, argument in arguments {
-			let buildArguments[] = this->_buildParameter(dependencyInjector, position, argument);
-		}
-		return buildArguments;
-	}
+        let buildArguments = [];
+        for position, argument in arguments {
+            let buildArguments[] = this->_buildParameter(dependencyInjector, position, argument);
+        }
+        return buildArguments;
+    }
 
-	/**
+    /**
      * Builds a service using a complex service definition
      *
      * @param \Phalcon\DiInterface $dependencyInjector
@@ -120,161 +120,161 @@ class Builder
      * @return mixed
      * @throws Exception
      */
-	public function build(<DiInterface> dependencyInjector, array! definition, parameters = null)
-	{
-		var className, arguments, paramCalls, methodPosition, method,
-			methodName, methodCall, reflection, instance, propertyPosition, property,
-			propertyName, propertyValue;
+    public function build(<DiInterface> dependencyInjector, array! definition, parameters = null)
+    {
+        var className, arguments, paramCalls, methodPosition, method,
+            methodName, methodCall, reflection, instance, propertyPosition, property,
+            propertyName, propertyValue;
 
-		/**
-		 * The class name is required
-		 */
-		if !fetch className, definition["className"] {
-			throw new Exception("Invalid service definition. Missing 'className' parameter");
-		}
+        /**
+         * The class name is required
+         */
+        if !fetch className, definition["className"] {
+            throw new Exception("Invalid service definition. Missing 'className' parameter");
+        }
 
-		if typeof parameters == "array" {
+        if typeof parameters == "array" {
 
-			/**
-			 * Build the instance overriding the definition constructor parameters
-			 */
-			if count(parameters) {
-				let reflection = new \ReflectionClass(className);
+            /**
+             * Build the instance overriding the definition constructor parameters
+             */
+            if count(parameters) {
+                let reflection = new \ReflectionClass(className);
                 let instance = reflection->newInstanceArgs(parameters);
-			} else {
-				let reflection = new \ReflectionClass(className);
+            } else {
+                let reflection = new \ReflectionClass(className);
                 let instance = reflection->newInstance();
-			}
+            }
 
-		} else {
+        } else {
 
-			/**
-			 * Check if the argument has constructor arguments
-			 */
-			if fetch arguments, definition["arguments"] {
+            /**
+             * Check if the argument has constructor arguments
+             */
+            if fetch arguments, definition["arguments"] {
 
-				/**
-				 * Create the instance based on the parameters
-				 */
-				let reflection = new \ReflectionClass(className);
+                /**
+                 * Create the instance based on the parameters
+                 */
+                let reflection = new \ReflectionClass(className);
                 let instance = reflection->newInstanceArgs(this->_buildParameters(dependencyInjector, arguments));
 
-			} else {
-				let reflection = new \ReflectionClass(className);
+            } else {
+                let reflection = new \ReflectionClass(className);
                 let instance = reflection->newInstance();
-			}
-		}
+            }
+        }
 
-		/**
-		 * The definition has calls?
-		 */
-		if fetch paramCalls, definition["calls"] {
+        /**
+         * The definition has calls?
+         */
+        if fetch paramCalls, definition["calls"] {
 
-			if typeof instance != "object" {
-				throw new Exception("The definition has setter injection parameters but the constructor didn't return an instance");
-			}
+            if typeof instance != "object" {
+                throw new Exception("The definition has setter injection parameters but the constructor didn't return an instance");
+            }
 
-			if typeof paramCalls != "array" {
-				throw new Exception("Setter injection parameters must be an array");
-			}
+            if typeof paramCalls != "array" {
+                throw new Exception("Setter injection parameters must be an array");
+            }
 
-			/**
-			 * The method call has parameters
-			 */
-			for methodPosition, method in paramCalls {
+            /**
+             * The method call has parameters
+             */
+            for methodPosition, method in paramCalls {
 
-				/**
-				 * The call parameter must be an array of arrays
-				 */
-				if typeof method != "array" {
-					throw new Exception("Method call must be an array on position " . methodPosition);
-				}
+                /**
+                 * The call parameter must be an array of arrays
+                 */
+                if typeof method != "array" {
+                    throw new Exception("Method call must be an array on position " . methodPosition);
+                }
 
-				/**
-				 * A param 'method' is required
-				 */
-				if !fetch methodName, method["method"] {
-					throw new Exception("The method name is required on position " . methodPosition);
-				}
+                /**
+                 * A param 'method' is required
+                 */
+                if !fetch methodName, method["method"] {
+                    throw new Exception("The method name is required on position " . methodPosition);
+                }
 
-				/**
-				 * Create the method call
-				 */
-				let methodCall = [instance, methodName];
+                /**
+                 * Create the method call
+                 */
+                let methodCall = [instance, methodName];
 
-				if fetch arguments, method["arguments"] {
+                if fetch arguments, method["arguments"] {
 
-					if typeof arguments != "array" {
-						throw new Exception("Call arguments must be an array " . methodPosition);
-					}
+                    if typeof arguments != "array" {
+                        throw new Exception("Call arguments must be an array " . methodPosition);
+                    }
 
-					if count(arguments) {
+                    if count(arguments) {
 
-						/**
-						 * Call the method on the instance
-						 */
-						call_user_func_array(methodCall, this->_buildParameters(dependencyInjector, arguments));
+                        /**
+                         * Call the method on the instance
+                         */
+                        call_user_func_array(methodCall, this->_buildParameters(dependencyInjector, arguments));
 
-						/**
-						 * Go to next method call
-						 */
-						continue;
-					}
-				}
+                        /**
+                         * Go to next method call
+                         */
+                        continue;
+                    }
+                }
 
-				/**
-				 * Call the method on the instance without arguments
-				 */
-				call_user_func(methodCall);
-			}
-		}
+                /**
+                 * Call the method on the instance without arguments
+                 */
+                call_user_func(methodCall);
+            }
+        }
 
-		/**
-		 * The definition has properties?
-		 */
-		if fetch paramCalls, definition["properties"] {
+        /**
+         * The definition has properties?
+         */
+        if fetch paramCalls, definition["properties"] {
 
-			if typeof instance != "object" {
-				throw new Exception("The definition has properties injection parameters but the constructor didn't return an instance");
-			}
+            if typeof instance != "object" {
+                throw new Exception("The definition has properties injection parameters but the constructor didn't return an instance");
+            }
 
-			if typeof paramCalls != "array" {
-				throw new Exception("Setter injection parameters must be an array");
-			}
+            if typeof paramCalls != "array" {
+                throw new Exception("Setter injection parameters must be an array");
+            }
 
-			/**
-			 * The method call has parameters
-			 */
-			for propertyPosition, property in paramCalls {
+            /**
+             * The method call has parameters
+             */
+            for propertyPosition, property in paramCalls {
 
-				/**
-				 * The call parameter must be an array of arrays
-				 */
-				if typeof property != "array" {
-					throw new Exception("Property must be an array on position " . propertyPosition);
-				}
+                /**
+                 * The call parameter must be an array of arrays
+                 */
+                if typeof property != "array" {
+                    throw new Exception("Property must be an array on position " . propertyPosition);
+                }
 
-				/**
-				 * A param 'name' is required
-				 */
-				if !fetch propertyName, property["name"] {
-					throw new Exception("The property name is required on position " . propertyPosition);
-				}
+                /**
+                 * A param 'name' is required
+                 */
+                if !fetch propertyName, property["name"] {
+                    throw new Exception("The property name is required on position " . propertyPosition);
+                }
 
-				/**
-				 * A param 'value' is required
-				 */
-				if !fetch propertyValue, property["value"] {
-					throw new Exception("The property value is required on position " . propertyPosition);
-				}
+                /**
+                 * A param 'value' is required
+                 */
+                if !fetch propertyValue, property["value"] {
+                    throw new Exception("The property value is required on position " . propertyPosition);
+                }
 
-				/**
-				 * Update the public property
-				 */
-				let instance->{propertyName} = this->_buildParameter(dependencyInjector, propertyPosition, propertyValue);
-			}
-		}
+                /**
+                 * Update the public property
+                 */
+                let instance->{propertyName} = this->_buildParameter(dependencyInjector, propertyPosition, propertyValue);
+            }
+        }
 
-		return instance;
-	}
+        return instance;
+    }
 }

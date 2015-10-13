@@ -14,11 +14,11 @@ namespace Scene\Filter;
 interface UserFilterInterface
 {
 
-	/**
+    /**
      * Filters a value
      *
      * @param mixed $value
      * @return mixed
      */
-	public function filter(value);
+    public function filter(value);
 }
