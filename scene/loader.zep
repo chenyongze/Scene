@@ -8,7 +8,6 @@ namespace Scene;
 
 use Scene\Events\ManagerInterface;
 use Scene\Events\EventsAwareInterface;
-use Scene\Text;
 
 /**
  * Scene\Loader
@@ -380,7 +379,7 @@ class Loader implements EventsAwareInterface
 				/**
 				 * The class name must start with the current namespace
 				 */
-				if Text::startsWith(className, nsPrefix) {
+				if starts_with(className, nsPrefix) {
 
 					/**
 					 * Append the namespace separator to the prefix
@@ -444,7 +443,7 @@ class Loader implements EventsAwareInterface
 				/**
 				 * The class name starts with the prefix?
 				 */
-				if Text::startsWith(className, prefix) {
+				if starts_with(className, prefix) {
 
 					/**
 					 * Get the possible file path

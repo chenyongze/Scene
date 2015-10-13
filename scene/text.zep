@@ -61,36 +61,7 @@ abstract class Text
      */
 	public static function camelize(string! str)
 	{
-		//return str->camelize();
-		var l, camelized, i;
-		if typeof str !== "string" {
-			throw new Exception("Invalid arguments supplied for camelize()");
-		}
-		
-		let l = strlen(str);
-		let camelized = "";
-
-		let i = 0;
-		while i < l {
-			if i === 0 || chr(str[i]) === "-" || chr(str[i]) === "_" {
-				if chr(str[i]) === '-' || chr(str[i]) === "_" {
-					let i++;
-				}
-
-				if chr(str[i]) {
-					let camelized .= strtoupper(chr(str[i]));
-				} else {
-					let camelized .= chr(0);
-				}
-			} else {
-				let camelized .= strtolower(chr(str[i]));
-			}
-			
-			let i++;
-		}
-		
-
-        return camelized;
+		return str->camelize();
 	}
 
 	/**
@@ -106,34 +77,7 @@ abstract class Text
      */
 	public static function uncamelize(string! str) -> string
 	{
-		//return str->uncamelize();
-		var l, uncamelized, i, ch;
-
-		let l = strlen(str);
-		let uncamelized = "";
-
-		let i = 0;
-		while i < l {
-			let ch = str[i];
-
-			if ch === 0 {
-				break;
-			}
-
-			if ch >= 65 && ch <= 90 {
-				if i > 0 {
-					let uncamelized .= "_";
-				}
-				let uncamelized .= chr(ch + 32);
-			} else {
-				let uncamelized .= chr(str[i]);
-			}
-
-			let i++;
-		}
-
-		return uncamelized;
-
+		return str->uncamelize();
 	}
 
 	/**
@@ -350,5 +294,38 @@ abstract class Text
 		}
 
 		return rtrim(a, separator) . separator . ltrim(b, separator);
+	}
+
+	/**
+	 * Generates random text in accordance with the template
+	 *
+	 * <code>
+	 *    echo Scene\Text::dynamic("{Hi|Hello}, my name is a {Bob|Mark|Jon}!"); // Hi my name is a Bob
+	 *    echo Scene\Text::dynamic("{Hi|Hello}, my name is a {Bob|Mark|Jon}!"); // Hi my name is a Jon
+	 *    echo Scene\Text::dynamic("{Hi|Hello}, my name is a {Bob|Mark|Jon}!"); // Hello my name is a Bob
+	 * </code>
+	 */
+	public static function dynamic(string! text, string! leftDelimiter = "{", string! rightDelimiter = "}", string! separator = "|") -> string
+	{
+		var ldS, rdS, result, pattern;
+
+		if substr_count(text, leftDelimiter) !== substr_count(text, rightDelimiter) {
+			throw new \RuntimeException("Syntax error in string \"" . text . "\"");
+		}
+
+		let ldS 	= preg_quote(leftDelimiter);
+		let rdS 	= preg_quote(rightDelimiter);
+		let pattern = "/" . ldS . "([^" . ldS . rdS . "]+)" . rdS . "/";
+		let result 	= text;
+
+		while memstr(result, leftDelimiter) {
+			let result = preg_replace_callback(pattern, function (matches) {
+				var words;
+				let words = explode("|", matches[1]);
+				return words[array_rand(words)];
+			}, result);
+		}
+
+		return result;
 	}
 }

@@ -11,7 +11,6 @@ use Scene\Http\Request\File;
 use Scene\Di\InjectionAwareInterface;
 use Scene\DiInterface;
 use Scene\Di;
-use Scene\Text;
 use Scene\FilterInterface;
 
 /**
@@ -401,9 +400,7 @@ class Request implements RequestInterface, InjectionAwareInterface
 		} else {
 			let contentType = this->getContentType();
 			if !empty contentType {
-				if (strpos(contentType, 'application/soap+xml') !== false) {
-                    return true;
-                }
+				return memstr(contentType, "application/soap+xml");
 			}
 		}
 		return false;
@@ -582,7 +579,7 @@ class Request implements RequestInterface, InjectionAwareInterface
 		}
 
 		if typeof address == "string" {
-			if strpos(address, ",") !== false {
+			if memstr(address, ",") {
 				/**
 				 * The client address has multiples parts, only return the first part
 				 */
@@ -933,7 +930,7 @@ class Request implements RequestInterface, InjectionAwareInterface
 		let contentHeaders = ["CONTENT_TYPE": true, "CONTENT_LENGTH": true];
 
 		for name, value in _SERVER {
-			if Text::startsWith(name, "HTTP_") {
+			if starts_with(name, "HTTP_") {
 				let name = ucwords(strtolower(str_replace("_", " ", substr(name, 5)))),
 					name = str_replace(" ", "-", name);
 				let headers[name] = value;
