@@ -11,7 +11,6 @@ use Scene\http\Request\Exception;
 use Scene\Http\Request\File;
 use Scene\Di\InjectionAwareInterface;
 use Scene\DiInterface;
-use Scene\Di;
 use Scene\FilterInterface;
 
 /**
@@ -84,13 +83,7 @@ class Request implements RequestInterface, InjectionAwareInterface
      */
     public function getDI() -> <DiInterface>
     {
-        var dependencyInjector;
-
-        let dependencyInjector = this->_dependencyInjector;
-        if typeof dependencyInjector != "object" {
-            let dependencyInjector = Di::getDefault();
-        }
-        return dependencyInjector;
+        return this->_dependencyInjector;
     }
 
     /**

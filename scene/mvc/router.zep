@@ -8,7 +8,6 @@ namespace Scene\Mvc;
 
 use Scene\Di\InjectionAwareInterface;
 use Scene\DiInterface;
-use Scene\Di;
 use Scene\Mvc\RouteInterface;
 use Scene\Mvc\Router\Route;
 use Scene\Mvc\Router\Exception;
@@ -272,13 +271,7 @@ class Router implements InjectionAwareInterface, RouterInterface, EventsAwareInt
      */
     public function getDI() -> <DiInterface>
     {
-        var dependencyInjector;
-
-        let dependencyInjector = this->_dependencyInjector;
-        if typeof dependencyInjector != "object" {
-            let dependencyInjector = Di::getDefault();
-        }
-        return dependencyInjector;
+        return this->_dependencyInjector;
     }
 
     /**

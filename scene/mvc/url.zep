@@ -10,7 +10,6 @@ use Scene\Mvc\UrlInterface;
 use Scene\Mvc\Url\Exception;
 use Scene\Di\InjectionAwareInterface;
 use Scene\DiInterface;
-use Scene\Di;
 
 /**
  * Scene\Mvc\Url
@@ -76,13 +75,7 @@ class Url implements UrlInterface, InjectionAwareInterface
      */
     public function getDI() -> <DiInterface>
     {
-        var dependencyInjector;
-
-        let dependencyInjector = this->_dependencyInjector;
-        if typeof dependencyInjector != "object" {
-            let dependencyInjector = Di::getDefault();
-        }
-        return dependencyInjector;
+        return this->_dependencyInjector;
     }
 
     /**
