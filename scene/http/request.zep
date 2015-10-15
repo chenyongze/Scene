@@ -6,6 +6,7 @@
 
 namespace Scene\Http;
 
+use Scene\Http\RequestInterface;
 use Scene\http\Request\Exception;
 use Scene\Http\Request\File;
 use Scene\Di\InjectionAwareInterface;

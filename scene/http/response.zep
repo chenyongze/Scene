@@ -9,6 +9,7 @@ namespace Scene\Http;
 use Scene\Di\InjectionAwareInterface;
 use Scene\DiInterface;
 use Scene\Di;
+use Scene\Http\ResponseInterface;
 use Scene\Http\Response\Exception;
 use Scene\Http\Response\HeadersInterface;
 use Scene\Http\Response\CookiesInterface;
