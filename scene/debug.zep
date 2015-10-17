@@ -567,6 +567,7 @@ class Debug
                  */
                 if showFileFragment {
 
+                    let beforeLine = 0;
                     /**
                      * Take seven lines back to the current exception's line, @TODO add an option for this
                      */
