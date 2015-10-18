@@ -115,8 +115,7 @@ abstract class Injectable implements InjectionAwareInterface, EventsAwareInterfa
      */
     public function __get(string! propertyName)
     {
-        var dependencyInjector, service;
-        //var persistent;
+        var dependencyInjector, service, persistent;
 
         let dependencyInjector = <DiInterface> this->_dependencyInjector;
         if typeof dependencyInjector != "object" {
@@ -143,13 +142,13 @@ abstract class Injectable implements InjectionAwareInterface, EventsAwareInterfa
         /**
          * Accessing the persistent property will create a session bag on any class
          */
-        /*
+        
         if propertyName == "persistent" {
             let persistent = <BagInterface> dependencyInjector->get("sessionBag", [get_class(this)]),
                 this->{"persistent"} = persistent;
             return persistent;
         }
-        */
+        
         /**
          * A notice is shown if the property is not defined and isn't a valid service
          */
