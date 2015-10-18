@@ -30,7 +30,7 @@ class FactoryDefault extends \Scene\Di
             //"modelsManager":      new Service("modelsManager", "Scene\\Mvc\\Model\\Manager", true),
             //"modelsMetadata":     new Service("modelsMetadata", "Scene\\Mvc\\Model\\MetaData\\Memory", true),
             "response":           new Service("response", "Scene\\Http\\Response", true),
-            //"cookies":            new Service("cookies", "Scene\\Http\\Response\\Cookies", true),
+            "cookies":            new Service("cookies", "Scene\\Http\\Response\\Cookies", true),
             "request":            new Service("request", "Scene\\Http\\Request", true),
             "filter":             new Service("filter", "Scene\\Filter", true),
             //"escaper":            new Service("escaper", "Scene\\Escaper", true),

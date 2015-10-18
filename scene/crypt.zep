@@ -29,38 +29,6 @@ class Crypt implements CryptInterface
 {
 
     /**
-     * Key
-     *
-     * @var null
-     * @access protected
-    */
-    protected _key;
-
-    /**
-     * Padding
-     *
-     * @var int
-     * @access protected
-    */
-    protected _padding = 0;
-
-    /**
-     * Mode
-     *
-     * @var string
-     * @access protected
-    */
-    protected _mode = "cbc";
-    
-    /**
-     * Cipher
-     *
-     * @var string
-     * @access protected
-    */
-    protected _cipher = "rijndael-256";
-
-    /**
      * Padding: Default
      *
      * @var int
@@ -108,6 +76,38 @@ class Crypt implements CryptInterface
      * @var int
     */
     const PADDING_SPACE = 6;
+
+    /**
+     * Key
+     *
+     * @var null
+     * @access protected
+    */
+    protected _key = "SCENESCENESCENES";
+
+    /**
+     * Padding
+     *
+     * @var int
+     * @access protected
+    */
+    protected _padding = 0;
+
+    /**
+     * Mode
+     *
+     * @var string
+     * @access protected
+    */
+    protected _mode = "cbc";
+    
+    /**
+     * Cipher
+     *
+     * @var string
+     * @access protected
+    */
+    protected _cipher = "rijndael-256";
 
     /**
      * @brief \Scene\CryptInterface \Scene\Crypt::setPadding(int $scheme)
@@ -451,6 +451,8 @@ class Crypt implements CryptInterface
         }
 
         let decrypted = mcrypt_decrypt(cipher, decryptKey, substr(text, ivSize), mode, substr(text, 0, ivSize));
+
+        let decrypted = trim(decrypted);
 
         let blockSize = mcrypt_get_block_size(cipher, mode);
         let paddingType = this->_padding;
