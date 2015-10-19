@@ -48,7 +48,7 @@ class Php extends Config
     /**
      * Scene\Config\Adapter\Php constructor
      *
-     * @param string $filePath
+     * @param string filePath
      */
     public function __construct(string! filePath)
     {
