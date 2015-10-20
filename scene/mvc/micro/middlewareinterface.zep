@@ -19,6 +19,6 @@ interface MiddlewareInterface
      *
      * @param \Scene\Mvc\Micro application
      */
-	public function call(<\Scene\Mvc\Micro> application);
+	public function call(var application);
 
 }
