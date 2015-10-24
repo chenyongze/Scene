@@ -226,8 +226,6 @@ class Simple extends Injectable implements ViewBaseInterface
             }
 
             let this->_engines = engines;
-        } else {
-            let engines = this->_engines;
         }
 
         return engines;

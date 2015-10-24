@@ -1,42 +1,29 @@
 
-/*
- +------------------------------------------------------------------------+
- | Phalcon Framework                                                      |
- +------------------------------------------------------------------------+
- | Copyright (c) 2011-2015 Phalcon Team (http://www.phalconphp.com)       |
- +------------------------------------------------------------------------+
- | This source file is subject to the New BSD License that is bundled     |
- | with this package in the file docs/LICENSE.txt.                        |
- |                                                                        |
- | If you did not receive a copy of the license and are unable to         |
- | obtain it through the world-wide-web, please send an email             |
- | to license@phalconphp.com so we can send you a copy immediately.       |
- +------------------------------------------------------------------------+
- | Authors: Andres Gutierrez <andres@phalconphp.com>                      |
- |          Eduar Carvajal <eduar@phalconphp.com>                         |
- +------------------------------------------------------------------------+
- */
+/**
+ * View
+ *
+*/
 
-namespace Phalcon\Mvc;
+namespace Scene\Mvc;
 
-use Phalcon\DiInterface;
-use Phalcon\Di\Injectable;
-use Phalcon\Mvc\View\Exception;
-use Phalcon\Mvc\ViewInterface;
-use Phalcon\Cache\BackendInterface;
-use Phalcon\Events\ManagerInterface;
-use Phalcon\Mvc\View\Engine\Php as PhpEngine;
+use Scene\DiInterface;
+use Scene\Di\Injectable;
+use Scene\Mvc\ViewInterface;
+use Scene\Mvc\View\Exception;
+use Scene\Mvc\View\Engine\Php as PhpEngine;
+use Scene\Events\ManagerInterface;
+use Scene\Cache\BackendInterface;
 
 /**
- * Phalcon\Mvc\View
+ * Scene\Mvc\View
  *
- * Phalcon\Mvc\View is a class for working with the "view" portion of the model-view-controller pattern.
+ * Scene\Mvc\View is a class for working with the "view" portion of the model-view-controller pattern.
  * That is, it exists to help keep the view script separate from the model and controller scripts.
  * It provides a system of helpers, output filters, and variable escaping.
  *
  * <code>
  * //Setting views directory
- * $view = new \Phalcon\Mvc\View();
+ * $view = new \Scene\Mvc\View();
  * $view->setViewsDir('app/views/');
  *
  * $view->start();
@@ -54,97 +41,247 @@ class View extends Injectable implements ViewInterface
 	/**
 	 * Render Level: To the main layout
 	 *
+	 * @var int
 	 */
 	const LEVEL_MAIN_LAYOUT = 5;
 
 	/**
 	 * Render Level: Render to the templates "after"
 	 *
+	 * @var int
 	 */
 	const LEVEL_AFTER_TEMPLATE = 4;
 
 	/**
 	 * Render Level: To the controller layout
 	 *
+	 * @var int
 	 */
 	const LEVEL_LAYOUT = 3;
 
 	/**
 	 * Render Level: To the templates "before"
 	 *
+	 * @var int
 	 */
 	const LEVEL_BEFORE_TEMPLATE = 2;
 
 	/**
 	 * Render Level: To the action view
+	 *
+	 * @var int
 	 */
 	const LEVEL_ACTION_VIEW = 1;
 
 	/**
 	 * Render Level: No render any view
 	 *
+	 * @var int
 	 */
 	const LEVEL_NO_RENDER = 0;
 
 	/**
 	 * Cache Mode
+	 *
+	 * @var int
 	 */
 	const CACHE_MODE_NONE = 0;
 	const CACHE_MODE_INVERSE = 1;
 
+	/**
+     * Options
+     *
+     * @var null|array
+     * @access protected
+    */
 	protected _options;
 
+	/**
+     * Base Path
+     *
+     * @var string
+     * @access protected
+    */
 	protected _basePath = "";
 
+	/**
+     * Content
+     *
+     * @var string|null
+     * @access protected
+    */
 	protected _content = "";
 
+	/**
+     * Render Level
+     *
+     * @var int
+     * @access protected
+    */
 	protected _renderLevel = 5 { get };
 
+	/**
+     * Current Render Level
+     *
+     * @var int
+     * @access protected
+    */
 	protected _currentRenderLevel = 0 { get };
 
+	/**
+     * Disabled Levels
+     *
+     * @var null|array
+     * @access protected
+    */
 	protected _disabledLevels;
 
+	/**
+     * View Params
+     *
+     * @var null|array
+     * @access protected
+    */
 	protected _viewParams;
 
+	/**
+     * Layout
+     *
+     * @var null|string
+     * @access protected
+    */
 	protected _layout;
 
+	/**
+     * Layouts Dir
+     *
+     * @var string
+     * @access protected
+    */
 	protected _layoutsDir = "";
 
+	/**
+     * Partials Dir
+     *
+     * @var string
+     * @access protected
+    */
 	protected _partialsDir = "";
 
+	/**
+     * Views Dir
+     *
+     * @var null|string
+     * @access protected
+    */
 	protected _viewsDir;
 
+	/**
+     * Templates Before
+     *
+     * @var null|array
+     * @access protected
+    */
 	protected _templatesBefore;
 
+	/**
+     * Templates After
+     *
+     * @var null|array
+     * @access protected
+    */
 	protected _templatesAfter;
 
+	/**
+     * Engines
+     *
+     * @var boolean
+     * @access protected
+    */
 	protected _engines = false;
 
 	/**
-	 * @var array
-	 */
+     * Registered Engines
+     *
+     * @var null|array
+     * @access protected
+    */
 	protected _registeredEngines { get };
 
+	/**
+     * Main View
+     *
+     * @var string
+     * @access protected
+    */
 	protected _mainView = "index";
 
+	/**
+     * Controller Name
+     *
+     * @var null|string
+     * @access protected
+    */
 	protected _controllerName;
 
+	/**
+     * Action Name
+     *
+     * @var null|string
+     * @access protected
+    */
 	protected _actionName;
 
+	/**
+     * Params
+     *
+     * @var null|string
+     * @access protected
+    */
 	protected _params;
 
+	/**
+     * Pick View
+     *
+     * @var null|array
+     * @access protected
+    */
 	protected _pickView;
 
+	/**
+     * Cache
+     *
+     * @var null|\Scene\Cache\BackendInterface
+     * @access protected
+    */
 	protected _cache;
 
+	/**
+     * Cache Level
+     *
+     * @var int
+     * @access protected
+    */
 	protected _cacheLevel = 0;
 
+	/**
+     * Active Render Path
+     *
+     * @var null|string
+     * @access protected
+    */
 	protected _activeRenderPath;
 
+	/**
+     * Dsiabeld
+     *
+     * @var boolean
+     * @access protected
+    */
 	protected _disabled = false;
 
 	/**
-	 * Phalcon\Mvc\View constructor
+	 * Scene\Mvc\View constructor
 	 *
 	 * @param array options
 	 */
@@ -157,6 +294,9 @@ class View extends Injectable implements ViewInterface
 
 	/**
 	 * Sets the views directory. Depending of your platform, always add a trailing slash or backslash
+	 *
+	 * @param string viewsDir
+     * @return \Scene\Mvc\View
 	 */
 	public function setViewsDir(string viewsDir) -> <View>
 	{
@@ -169,6 +309,8 @@ class View extends Injectable implements ViewInterface
 
 	/**
 	 * Gets views directory
+	 *
+	 * @return string
 	 */
 	public function getViewsDir() -> string
 	{
@@ -181,6 +323,9 @@ class View extends Injectable implements ViewInterface
 	 *<code>
 	 * $view->setLayoutsDir('../common/layouts/');
 	 *</code>
+	 *
+	 * @param string layoutsDir
+     * @return \Scene\Mvc\View
 	 */
 	public function setLayoutsDir(string layoutsDir) -> <View>
 	{
@@ -190,6 +335,8 @@ class View extends Injectable implements ViewInterface
 
 	/**
 	 * Gets the current layouts sub-directory
+	 *
+	 * @return string
 	 */
 	public function getLayoutsDir() -> string
 	{
@@ -202,6 +349,9 @@ class View extends Injectable implements ViewInterface
 	 *<code>
 	 * $view->setPartialsDir('../common/partials/');
 	 *</code>
+	 *
+	 * @param string $partialsDir
+     * @return \Scene\Mvc\View
 	 */
 	public function setPartialsDir(string partialsDir) -> <View>
 	{
@@ -211,6 +361,8 @@ class View extends Injectable implements ViewInterface
 
 	/**
 	 * Gets the current partials sub-directory
+	 *
+	 * @return string
 	 */
 	public function getPartialsDir() -> string
 	{
@@ -223,6 +375,9 @@ class View extends Injectable implements ViewInterface
 	 * <code>
 	 * 	$view->setBasePath(__DIR__ . '/');
 	 * </code>
+	 *
+	 * @param string $basePath
+     * @return \Scene\Mvc\View
 	 */
 	public function setBasePath(string basePath) -> <View>
 	{
@@ -232,6 +387,8 @@ class View extends Injectable implements ViewInterface
 
 	/**
 	 * Gets base path
+	 *
+	 * @return string
 	 */
 	public function getBasePath() -> string
 	{
@@ -245,6 +402,9 @@ class View extends Injectable implements ViewInterface
 	 * 	//Render the view related to the controller only
 	 * 	$this->view->setRenderLevel(View::LEVEL_LAYOUT);
 	 * </code>
+	 *
+	 * @param int level
+     * @return \Scene\Mvc\View
 	 */
 	public function setRenderLevel(int level) -> <View>
 	{
@@ -261,7 +421,7 @@ class View extends Injectable implements ViewInterface
 	 *</code>
 	 *
 	 * @param int|array level
-	 * @return \Phalcon\Mvc\View
+	 * @return \Scene\Mvc\View
 	 */
 	public function disableLevel(var level) -> <View>
 	{
@@ -270,6 +430,7 @@ class View extends Injectable implements ViewInterface
 		} else {
 			let this->_disabledLevels[level] = true;
 		}
+		
 		return this;
 	}
 
@@ -280,6 +441,9 @@ class View extends Injectable implements ViewInterface
 	 * 	//Renders as main view views-dir/base.phtml
 	 * 	$this->view->setMainView('base');
 	 * </code>
+	 *
+	 * @param string viewPath
+     * @return \Scene\Mvc\View
 	 */
 	public function setMainView(string viewPath) -> <View>
 	{
@@ -289,6 +453,8 @@ class View extends Injectable implements ViewInterface
 
 	/**
 	 * Returns the name of the main view
+	 *
+	 * @return string
 	 */
 	public function getMainView() -> string
 	{
@@ -301,6 +467,9 @@ class View extends Injectable implements ViewInterface
 	 * <code>
 	 * 	$this->view->setLayout('main');
 	 * </code>
+	 *
+	 * @param string layout
+     * @return \Scene\Mvc\View
 	 */
 	public function setLayout(string layout) -> <View>
 	{
@@ -310,6 +479,8 @@ class View extends Injectable implements ViewInterface
 
 	/**
 	 * Returns the name of the main view
+	 *
+	 * @return string
 	 */
 	public function getLayout() -> string
 	{
@@ -320,7 +491,7 @@ class View extends Injectable implements ViewInterface
 	 * Sets a template before the controller layout
 	 *
 	 * @param string|array templateBefore
-	 * @return \Phalcon\Mvc\View
+	 * @return \Scene\Mvc\View
 	 */
 	public function setTemplateBefore(var templateBefore) -> <View>
 	{
@@ -329,11 +500,14 @@ class View extends Injectable implements ViewInterface
 		} else {
 			let this->_templatesBefore = templateBefore;
 		}
+		
 		return this;
 	}
 
 	/**
 	 * Resets any "template before" layouts
+	 *
+	 * @return \Scene\Mvc\View
 	 */
 	public function cleanTemplateBefore() -> <View>
 	{
@@ -345,7 +519,7 @@ class View extends Injectable implements ViewInterface
 	 * Sets a "template after" controller layout
 	 *
 	 * @param string|array templateAfter
-	 * @return \Phalcon\Mvc\View
+	 * @return \Scene\Mvc\View
 	 */
 	public function setTemplateAfter(var templateAfter) -> <View>
 	{
@@ -359,6 +533,8 @@ class View extends Injectable implements ViewInterface
 
 	/**
 	 * Resets any template before layouts
+	 *
+	 * @return \Scene\Mvc\View
 	 */
 	public function cleanTemplateAfter() -> <View>
 	{
@@ -375,7 +551,7 @@ class View extends Injectable implements ViewInterface
 	 *
 	 * @param string key
 	 * @param mixed value
-	 * @return \Phalcon\Mvc\View
+	 * @return \Scene\Mvc\View
 	 */
 	public function setParamToView(string! key, value) -> <View>
 	{
@@ -392,7 +568,7 @@ class View extends Injectable implements ViewInterface
 	 *
 	 * @param array params
 	 * @param boolean merge
-	 * @return \Phalcon\Mvc\View
+	 * @return \Scene\Mvc\View
 	 */
 	public function setVars(array! params, boolean merge = true) -> <View>
 	{
@@ -421,7 +597,7 @@ class View extends Injectable implements ViewInterface
 	 *
 	 * @param string key
 	 * @param mixed value
-	 * @return \Phalcon\Mvc\View
+	 * @return \Scene\Mvc\View
 	 */
 	public function setVar(string! key, value) -> <View>
 	{
@@ -496,28 +672,32 @@ class View extends Injectable implements ViewInterface
 	}
 
 	/**
-	 * Loads registered template engines, if none is registered it will use Phalcon\Mvc\View\Engine\Php
+	 * Loads registered template engines, if none is registered it will use Scene\Mvc\View\Engine\Php
+	 *
+	 * @return array
+     * @throws Exception
 	 */
 	protected function _loadTemplateEngines() -> array
 	{
-		var engines, dependencyInjector, registeredEngines, arguments,
-			engineService, extension;
-
-		let engines = this->_engines;
+		var engines, dependencyInjector, registeredEngines, arguments, extension,
+			engineService, engineObject;
 
 		/**
 		 * If the engines aren't initialized 'engines' is false
 		 */
+		let engines = this->_engines;
 		if engines === false {
 
 			let dependencyInjector = <DiInterface> this->_dependencyInjector;
 
 			let engines = [];
+			
 			let registeredEngines = this->_registeredEngines;
 			if typeof registeredEngines != "array" {
 
 				/**
-				 * We use Phalcon\Mvc\View\Engine\Php as default
+				 * We use Scene\Mvc\View\Engine\Php as default
+				 * Use .phtml as extension for the PHP engine
 				 */
 				let engines[".phtml"] = new PhpEngine(this, dependencyInjector);
 			} else {
@@ -526,7 +706,11 @@ class View extends Injectable implements ViewInterface
 					throw new Exception("A dependency injector container is required to obtain the application services");
 				}
 
+				/**
+                 * Arguments for instantiated engines
+                 */
 				let arguments = [this, dependencyInjector];
+				
 				for extension, engineService in registeredEngines {
 
 					if typeof engineService == "object" {
@@ -535,9 +719,9 @@ class View extends Injectable implements ViewInterface
 						 * Engine can be a closure
 						 */
 						if engineService instanceof \Closure {
-							let engines[extension] = call_user_func_array(engineService, arguments);
+							let engineObject = call_user_func_array(engineService, arguments);
 						} else {
-							let engines[extension] = engineService;
+							let engineObject = engineService;
 						}
 
 					} else {
@@ -549,8 +733,10 @@ class View extends Injectable implements ViewInterface
 							throw new Exception("Invalid template engine registration for extension: " . extension);
 						}
 
-						let engines[extension] = dependencyInjector->getShared(engineService, arguments);
+						let engineObject = dependencyInjector->getShared(engineService, arguments);
 					}
+
+					let engines[extension] = engineObject;
 				}
 			}
 
@@ -567,7 +753,8 @@ class View extends Injectable implements ViewInterface
 	 * @param string viewPath
 	 * @param boolean silence
 	 * @param boolean mustClean
-	 * @param \Phalcon\Cache\BackendInterface $cache
+	 * @param \Scene\Cache\BackendInterface $cache
+	 * @throws Exception
 	 */
 	protected function _engineRender(engines, string viewPath, boolean silence, boolean mustClean, <BackendInterface> cache = null)
 	{
@@ -583,6 +770,7 @@ class View extends Injectable implements ViewInterface
 			viewsDirPath = basePath . viewsDir . viewPath;
 
 		if typeof cache == "object" {
+			
 			let renderLevel = (int) this->_renderLevel,
 				cacheLevel = (int) this->_cacheLevel;
 
@@ -691,11 +879,14 @@ class View extends Injectable implements ViewInterface
 	 *
 	 *<code>
 	 *$this->view->registerEngines(array(
-	 *  ".phtml" => "Phalcon\Mvc\View\Engine\Php",
-	 *  ".volt"  => "Phalcon\Mvc\View\Engine\Volt",
+	 *  ".phtml" => "Scene\Mvc\View\Engine\Php",
+	 *  ".volt"  => "Scene\Mvc\View\Engine\Volt",
 	 *  ".mhtml" => "MyCustomEngine"
 	 *));
 	 *</code>
+	 *
+	 * @param array $engines
+     * @return \Scene\Mvc\View
 	 */
 	public function registerEngines(array! engines) -> <View>
 	{
@@ -705,6 +896,9 @@ class View extends Injectable implements ViewInterface
 
 	/**
 	 * Checks whether view exists
+	 *
+	 * @param string view
+     * @return boolean
 	 */
 	public function exists(string! view) -> boolean
 	{
@@ -717,7 +911,7 @@ class View extends Injectable implements ViewInterface
 
 		if typeof engines != "array" {
 			let engines = [],
-				engines[".phtml"] = "Phalcon\\Mvc\\View\\Engine\\Php",
+				engines[".phtml"] = "Scene\\Mvc\\View\\Engine\\Php",
 				this->_registeredEngines = engines;
 		}
 
@@ -743,6 +937,7 @@ class View extends Injectable implements ViewInterface
 	 * @param string controllerName
 	 * @param string actionName
 	 * @param array params
+	 * @return \Scene\Mvc\View|boolean
 	 */
 	public function render(string! controllerName, string! actionName, params = null) -> <View>|boolean
 	{
@@ -956,7 +1151,7 @@ class View extends Injectable implements ViewInterface
 	 * Choose a different view to render instead of last-controller/last-action
 	 *
 	 * <code>
-	 * class ProductsController extends \Phalcon\Mvc\Controller
+	 * class ProductsController extends \Scene\Mvc\Controller
 	 * {
 	 *
 	 *    public function saveAction()
@@ -971,7 +1166,7 @@ class View extends Injectable implements ViewInterface
 	 * </code>
 	 *
 	 * @param string|array renderView
-	 * @return \Phalcon\Mvc\View
+	 * @return \Scene\Mvc\View
 	 */
 	public function pick(var renderView) -> <View>
 	{
@@ -1145,6 +1340,8 @@ class View extends Injectable implements ViewInterface
 
 	/**
 	 * Finishes the render process by stopping the output buffering
+	 *
+	 * @return \Scene\Mvc\View
 	 */
 	public function finish() -> <View>
 	{
@@ -1153,7 +1350,10 @@ class View extends Injectable implements ViewInterface
 	}
 
 	/**
-	 * Create a Phalcon\Cache based on the internal cache options
+	 * Create a Scene\Cache based on the internal cache options
+	 *
+	 * @return \Scene\Cache\BackendInterface
+     * @throws Exception
 	 */
 	protected function _createCache() -> <BackendInterface>
 	{
@@ -1189,6 +1389,8 @@ class View extends Injectable implements ViewInterface
 
 	/**
 	 * Check if the component is currently caching the output content
+	 *
+	 * @return boolean
 	 */
 	public function isCaching() -> boolean
 	{
@@ -1197,6 +1399,8 @@ class View extends Injectable implements ViewInterface
 
 	/**
 	 * Returns the cache instance used to cache
+	 *
+	 * @return \Scene\Cache\BackendInterface
 	 */
 	public function getCache() -> <BackendInterface>
 	{
@@ -1222,7 +1426,7 @@ class View extends Injectable implements ViewInterface
 	 *</code>
 	 *
 	 * @param boolean|array options
-	 * @return \Phalcon\Mvc\View
+	 * @return \Scene\Mvc\View
 	 */
 	public function cache(var options = true) -> <View>
 	{
@@ -1278,6 +1482,9 @@ class View extends Injectable implements ViewInterface
 	 *<code>
 	 *	$this->view->setContent("<h1>hello</h1>");
 	 *</code>
+	 *
+	 * @param string content
+     * @return \Scene\Mvc\View
 	 */
 	public function setContent(string content) -> <View>
 	{
@@ -1287,6 +1494,8 @@ class View extends Injectable implements ViewInterface
 
 	/**
 	 * Returns cached output from another view stage
+	 *
+	 * @return string
 	 */
 	public function getContent() -> string
 	{
@@ -1295,6 +1504,8 @@ class View extends Injectable implements ViewInterface
 
 	/**
 	 * Returns the path of the view that is currently rendered
+	 *
+	 * @return string
 	 */
 	public function getActiveRenderPath() -> string
 	{
@@ -1303,6 +1514,8 @@ class View extends Injectable implements ViewInterface
 
 	/**
 	 * Disables the auto-rendering process
+	 *
+	 * @return \Scene\Mvc\View
 	 */
 	public function disable() -> <View>
 	{
@@ -1312,6 +1525,8 @@ class View extends Injectable implements ViewInterface
 
 	/**
 	 * Enables the auto-rendering process
+	 *
+	 * @return \Scene\Mvc\View
 	 */
 	public function enable() -> <View>
 	{
@@ -1321,6 +1536,8 @@ class View extends Injectable implements ViewInterface
 
 	/**
 	 * Resets the view component to its factory default values
+	 *
+	 * @return \Scene\Mvc\View
 	 */
 	public function reset() -> <View>
 	{
