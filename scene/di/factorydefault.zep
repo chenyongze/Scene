@@ -25,7 +25,7 @@ class FactoryDefault extends \Scene\Di
 
         let this->_services = [
             "router":             new Service("router", "Scene\\Mvc\\Router", true),
-            //"dispatcher":         new Service("dispatcher", "Scene\\Mvc\\Dispatcher", true),
+            "dispatcher":         new Service("dispatcher", "Scene\\Mvc\\Dispatcher", true),
             "url":                new Service("url", "Scene\\Mvc\\Url", true),
             //"modelsManager":      new Service("modelsManager", "Scene\\Mvc\\Model\\Manager", true),
             //"modelsMetadata":     new Service("modelsMetadata", "Scene\\Mvc\\Model\\MetaData\\Memory", true),
