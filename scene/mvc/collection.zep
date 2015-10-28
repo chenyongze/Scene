@@ -12,7 +12,8 @@ use Scene\Mvc\Collection\Document;
 use Scene\Mvc\Collection\ManagerInterface;
 use Scene\Mvc\Collection\BehaviorInterface;
 use Scene\Mvc\Collection\Exception;
-use Scene\Mvc\Model\MessageInterface;
+use Scene\Mvc\Collection\MessageInterface;
+use Scene\Mvc\Collection\ValidatorInterface;
 use Scene\Events\ManagerInterface as EventsManagerInterface;
 
 /**
@@ -405,7 +406,7 @@ abstract class Collection implements EntityInterface, CollectionInterface, Injec
      * Returns a cloned collection
      *
      * @param \Scene\Mvc\CollectionInterface $collection
-     * @param array $document
+     * @param array document
      * @return \Scene\Mvc\CollectionInterface
      */
     public static function cloneResult(<CollectionInterface> collection, array! document) -> <CollectionInterface>
@@ -687,8 +688,8 @@ abstract class Collection implements EntityInterface, CollectionInterface, Injec
     /**
      * Executes internal events after save a document
      *
-     * @param boolean $disableEvents
-     * @param boolean $success
+     * @param boolean disableEvents
+     * @param boolean success
      * @param boolean $exists
      * @return boolean
      */
@@ -742,9 +743,9 @@ abstract class Collection implements EntityInterface, CollectionInterface, Injec
      *}
      *</code>
      *
-     * @param object $validator
+     * @param object validator
      */
-    protected function validate(<Model\ValidatorInterface> validator) -> void
+    protected function validate(<ValidatorInterface> validator) -> void
     {
         var message;
 
@@ -796,7 +797,7 @@ abstract class Collection implements EntityInterface, CollectionInterface, Injec
     /**
      * Fires an internal event
      *
-     * @param string $eventName
+     * @param string eventName
      * @return boolean
      */
     public function fireEvent(string! eventName) -> boolean
@@ -817,7 +818,7 @@ abstract class Collection implements EntityInterface, CollectionInterface, Injec
     /**
      * Fires an internal event that cancels the operation
      *
-     * @param string $eventName
+     * @param string eventName
      * @return boolean
      */
     public function fireEventCancel(string! eventName) -> boolean
@@ -844,7 +845,7 @@ abstract class Collection implements EntityInterface, CollectionInterface, Injec
     /**
      * Cancel the current operation
      *
-     * @param boolean $disableEvents
+     * @param boolean disableEvents
      * @return boolean
      */
     protected function _cancelOperation(boolean disableEvents) -> boolean
@@ -915,7 +916,7 @@ abstract class Collection implements EntityInterface, CollectionInterface, Injec
      *}
      * </code>
      *
-     * @return \Scene\Mvc\Model\MessageInterface[]|null
+     * @return \Scene\Mvc\Collection\MessageInterface[]|null
      */
     public function getMessages() -> <MessageInterface[]>
     {
@@ -926,9 +927,9 @@ abstract class Collection implements EntityInterface, CollectionInterface, Injec
      * Appends a customized message on the validation process
      *
      *<code>
-     *  use \Scene\Mvc\Model\Message as Message;
+     *  use \Scene\Mvc\Collection\Message as Message;
      *
-     *  class Robots extends \Scene\Mvc\Model
+     *  class Robots extends \Scene\Mvc\Collection
      *  {
      *
      *      public function beforeSave()
@@ -1078,12 +1079,12 @@ abstract class Collection implements EntityInterface, CollectionInterface, Injec
      * //Get first virtual robot ordered by name
      * $robot = Robots::findFirst(array(
      *     array("type" => "mechanical"),
-     *     "order" => array("name" => 1)
+     *     "sort" => array("name" => 1)
      * ));
      * echo "The first virtual robot name is ", $robot->name, "\n";
      * </code>
      *
-     * @param array|null $parameters
+     * @param array|null parameters
      * @return array
      */
     public static function findFirst(array parameters = null) -> array
