@@ -5,7 +5,8 @@
 
 namespace Scene\Mvc;
 
-use Scene\Mvc\Model\MessageInterface;
+use Scene\Mvc\Collection\ManagerInterface;
+use Scene\Mvc\Collection\MessageInterface;
 
 /**
  * Scene\Mvc\CollectionInterface

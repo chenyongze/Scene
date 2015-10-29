@@ -5,7 +5,6 @@
 
 namespace Scene\Mvc\Collection;
 
-use Scene\Db\AdapterInterface;
 use Scene\Mvc\CollectionInterface;
 use Scene\Mvc\Collection\BehaviorInterface;
 use Scene\Events\ManagerInterface as EventsManagerInterface;
@@ -73,7 +72,7 @@ interface ManagerInterface
      * Sets a connection service for a specific model
      *
      * @param \Scene\Mvc\CollectionInterface model
-     * @param string $connectionService
+     * @param string connectionService
      */
     public function setConnectionService(<CollectionInterface> model, string! connectionService);
 
@@ -81,7 +80,7 @@ interface ManagerInterface
      * Sets if a model must use implicit objects ids
      *
      * @param \Scene\Mvc\CollectionInterface model
-     * @param boolean $useImplicitObjectIds
+     * @param boolean useImplicitObjectIds
      */
     public function useImplicitObjectIds(<CollectionInterface> model, boolean useImplicitObjectIds);
 
@@ -97,9 +96,9 @@ interface ManagerInterface
      * Returns the connection related to a model
      *
      * @param \Scene\Mvc\CollectionInterface model
-     * @return \Scene\Db\AdapterInterface
+     * \Mongo
      */
-    public function getConnection(<CollectionInterface> model) -> <AdapterInterface>;
+    public function getConnection(<CollectionInterface> model);
 
     /**
      * Receives events generated in the models and dispatches them to a events-manager if available
