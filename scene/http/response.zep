@@ -107,6 +107,8 @@ class Response implements ResponseInterface, InjectionAwareInterface
 
     /**
      * Sets the dependency injector
+     *
+     * @param \Scene\DiInterface dependencyInjector
      */
     public function setDI(<DiInterface> dependencyInjector)
     {
@@ -115,6 +117,8 @@ class Response implements ResponseInterface, InjectionAwareInterface
 
     /**
      * Returns the internal dependency injector
+     *
+     * @return \Scene\DiInterface|null
      */
     public function getDI() -> <DiInterface>
     {

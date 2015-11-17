@@ -68,8 +68,7 @@ class Request implements RequestInterface, InjectionAwareInterface
     /**
      * Sets the dependency injector
      *
-     * @param \Scene\DiInterface $dependencyInjector
-     * @throws Exception
+     * @param \Scene\DiInterface dependencyInjector
      */
     public function setDI(<DiInterface> dependencyInjector)
     {

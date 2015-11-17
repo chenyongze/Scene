@@ -228,6 +228,8 @@ abstract class Collection implements EntityInterface, CollectionInterface, Injec
 
     /**
      * Returns the dependency injection container
+     *
+     * @return \Scene\DiInterface|null
      */
     public function getDI() -> <DiInterface>
     {
