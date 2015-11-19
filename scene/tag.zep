@@ -113,6 +113,10 @@ class Tag
 
     protected static _documentType = 11;
 
+    protected static _documentDescription = null;
+
+    protected static _documentKeywords = null;
+
     /**
      * Framework Dispatcher
      */
@@ -1106,6 +1110,105 @@ class Tag
     {
         return self::_documentTitleSeparator;
     }
+
+    /*
+     * Set the description of view content
+     *
+     * <code>
+     *  \Scene\Tag::setDescription("This is my site");
+     * </code>
+     *
+     * @param string description
+     */
+    public static function setDescription(string description)
+    {
+        let self::_documentDescription = description;
+    }
+
+    /*
+     * Get the current document description
+     *
+     * <code>
+     *  \Scene\Tag::getDescription();
+     * </code>
+     *
+     * @param boolean tags
+     * @return string
+     */
+    public static function getDescription(boolean tags = true) -> string
+    {
+        var description, code;
+
+        let description = self::_documentDescription;
+        if (tags) {
+
+            let code = "<mate name=\"description\" content=\"",
+                code .= description;
+
+            /**
+             * Check if Doctype is XHTML
+             */
+            if self::_documentType > self::HTML5 {
+                let code .= "\" />" . PHP_EOL;
+            } else {
+                let code .= "\">" . PHP_EOL;
+            }
+
+            return code;
+        }
+
+        return description;
+    }
+
+    /*
+     * Set the keywords of view content
+     *
+     * <code>
+     *  \Scene\Tag::setKeywords("This is my site");
+     * </code>
+     *
+     * @param string keywords
+     */
+    public static function setKeywords(string keywords)
+    {
+        let self::_documentKeywords = keywords;
+    }
+
+    /*
+     * Get the current document keywords
+     *
+     * <code>
+     *  \Scene\Tag::getKeywords();
+     * </code>
+     *
+     * @param boolean tags
+     * @return string
+     */
+    public static function getKeywords(boolean tags = true) -> string
+    {
+        var keywords, code;
+
+        let keywords = self::_documentKeywords;
+        if (tags) {
+
+            let code = "<mate name=\"keywords\" content=\"",
+                code .= keywords;
+
+            /**
+             * Check if Doctype is XHTML
+             */
+            if self::_documentType > self::HTML5 {
+                let code .= "\" />" . PHP_EOL;
+            } else {
+                let code .= "\">" . PHP_EOL;
+            }
+
+            return code;
+        }
+
+        return keywords;
+    }
+    
 
     /**
      * Builds a LINK[rel="stylesheet"] tag
