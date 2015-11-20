@@ -380,6 +380,16 @@ class Request implements RequestInterface, InjectionAwareInterface
     }
 
     /**
+     * Checks whether request has been made using pjax. Checks if $_SERVER['HTTP_X_PJAX']
+     *
+     * @return boolean
+     */
+    public function isPjax() -> boolean
+    {
+        return array_key_exists("HTTP_X_PJAX", _SERVER) && _SERVER["HTTP_X_PJAX"];
+    }
+
+    /**
      * Checks whether request has been made using SOAP
      *
      * @return boolean
