@@ -7,7 +7,7 @@ use Scene\Events\ManagerInterface;
 use Scene\Di\InjectionAwareInterface;
 use Scene\Events\EventsAwareInterface;
 use Scene\Di\Exception;
-//use Scene\Session\BagInterface;
+use Scene\Session\BagInterface;
 
 /**
  * Scene\Di\Injectable
@@ -141,8 +141,7 @@ abstract class Injectable implements InjectionAwareInterface, EventsAwareInterfa
 
         /**
          * Accessing the persistent property will create a session bag on any class
-         */
-        
+         */       
         if propertyName == "persistent" {
             let persistent = <BagInterface> dependencyInjector->get("sessionBag", [get_class(this)]),
                 this->{"persistent"} = persistent;
