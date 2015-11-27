@@ -578,7 +578,8 @@ class Response implements ResponseInterface, InjectionAwareInterface
      */
     public function setJsonContent(var content, jsonOptions = 0, depth = 512) -> <ResponseInterface>
     {
-        let this->_content = json_encode(content, jsonOptions, depth);
+        this->setContentType("application/json", "UTF-8");
+        this->setContent(json_encode(content, jsonOptions, depth));
         return this;
     }
 
