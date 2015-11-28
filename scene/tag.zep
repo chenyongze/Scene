@@ -1140,6 +1140,11 @@ class Tag
         var description, code;
 
         let description = self::_documentDescription;
+        
+        if empty description {
+            return "";
+        }
+
         if (tags) {
 
             let code = "<mate name=\"description\" content=\"",
@@ -1189,6 +1194,11 @@ class Tag
         var keywords, code;
 
         let keywords = self::_documentKeywords;
+        
+        if empty keywords {
+            return "";
+        }
+
         if (tags) {
 
             let code = "<mate name=\"keywords\" content=\"",
