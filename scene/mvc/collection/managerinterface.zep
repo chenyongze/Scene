@@ -96,7 +96,7 @@ interface ManagerInterface
      * Returns the connection related to a model
      *
      * @param \Scene\Mvc\CollectionInterface model
-     * \Mongo
+     * return \MongoDB\Driver\Manage
      */
     public function getConnection(<CollectionInterface> model);
 
@@ -108,12 +108,4 @@ interface ManagerInterface
      * @param \Scene\Mvc\CollectionInterface model
      */
     public function notifyEvent(string! eventName, <CollectionInterface> model);
-
-    /**
-     * Binds a behavior to a collection
-     *
-     * @param \Scene\Mvc\CollectionInterface model
-     * @param \Scene\Mvc\Collection\BehaviorInterface
-     */
-    public function addBehavior(<CollectionInterface> model, <BehaviorInterface> behavior);
 }

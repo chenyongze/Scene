@@ -8,13 +8,15 @@ namespace Scene\Mvc;
 use Scene\Di;
 use Scene\DiInterface;
 use Scene\Di\InjectionAwareInterface;
-use Scene\Mvc\Collection\Document;
 use Scene\Mvc\Collection\ManagerInterface;
-use Scene\Mvc\Collection\BehaviorInterface;
 use Scene\Mvc\Collection\Exception;
 use Scene\Mvc\Collection\MessageInterface;
 use Scene\Mvc\Collection\ValidatorInterface;
 use Scene\Events\ManagerInterface as EventsManagerInterface;
+use MongoDB\Driver\BulkWrite;
+use MongoDB\Driver\Query;
+use MongoDB\Driver\Command;
+use MongoDB\BSON\ObjectId;
 
 /**
  * Scene\Mvc\Collection
@@ -22,7 +24,7 @@ use Scene\Events\ManagerInterface as EventsManagerInterface;
  * This component implements a high level abstraction for NoSQL databases which
  * works with documents
  */
-abstract class Collection implements EntityInterface, CollectionInterface, InjectionAwareInterface, \Serializable
+abstract class Collection implements CollectionInterface, EntityInterface, InjectionAwareInterface, \Serializable
 {
 
     /**
@@ -70,12 +72,20 @@ abstract class Collection implements EntityInterface, CollectionInterface, Injec
     protected _dependencyInjector;
 
     /**
-     * Models Manager
+     * collection Manager
      *
      * @var null|\Scene\Mvc\Collection\ManagerInterface
      * @access protected
     */
-    protected _modelsManager;
+    protected _collectionManager;
+
+    /**
+     * DB
+     *
+     * @var null|string
+     * @access protected
+    */
+    protected _db;
 
     /**
      * Source
@@ -123,7 +133,7 @@ abstract class Collection implements EntityInterface, CollectionInterface, Injec
      * @var boolean
      * @access protected
     */
-    protected static _disableEvents;
+    protected static _disableEvents = false;
 
     /**
      * Skipped
@@ -136,7 +146,7 @@ abstract class Collection implements EntityInterface, CollectionInterface, Injec
     /**
      * Scene\Mvc\Collection constructor
      */
-    public final function __construct(<DiInterface> dependencyInjector = null, <ManagerInterface> modelsManager = null)
+    public final function __construct(<DiInterface> dependencyInjector = null, <ManagerInterface> collectionManager = null)
     {
         /**
          * We use a default DI if the user doesn't define one
@@ -154,23 +164,23 @@ abstract class Collection implements EntityInterface, CollectionInterface, Injec
         /**
          * Inject the manager service from the DI
          */
-        if typeof modelsManager != "object" {
-            let modelsManager = dependencyInjector->getShared("collectionManager");
+        if typeof collectionManager != "object" {
+            let collectionManager = dependencyInjector->getShared("collectionManager");
         }
 
-        if typeof modelsManager != "object" {
-            throw new Exception("The injected service 'modelsManager' is not valid");
+        if typeof collectionManager != "object" {
+            throw new Exception("The injected service 'collectionManager' is not valid");
         }
 
         /**
          * Update the models-manager
          */
-        let this->_modelsManager = modelsManager;
+        let this->_collectionManager = collectionManager;
 
         /**
          * The manager always initializes the object
          */
-        modelsManager->initialize(this);
+        collectionManager->initialize(this);
 
         /**
          * This allows the developer to execute initialization stuff every time an instance is created
@@ -187,23 +197,23 @@ abstract class Collection implements EntityInterface, CollectionInterface, Injec
      */
     public function setId(id)
     {
-        var mongoId;
+        var oid;
 
         if typeof id != "object" {
 
             /**
              * Check if the model use implicit ids
              */
-            if this->_modelsManager->isUsingImplicitObjectIds(this) {
-                let mongoId = new \MongoId(id);
+            if this->_collectionManager->isUsingImplicitObjectIds(this) {
+                let oid = new ObjectId(id);
             } else {
-                let mongoId = id;
+                let oid = id;
             }
 
         } else {
-            let mongoId = id;
+            let oid = id;
         }
-        let this->_id = mongoId;
+        let this->_id = oid;
     }
 
     /**
@@ -243,7 +253,7 @@ abstract class Collection implements EntityInterface, CollectionInterface, Injec
      */
     protected function setEventsManager(<EventsManagerInterface> eventsManager)
     {
-        this->_modelsManager->setCustomEventsManager(this, eventsManager);
+        this->_collectionManager->setCustomEventsManager(this, eventsManager);
     }
 
     /**
@@ -253,7 +263,7 @@ abstract class Collection implements EntityInterface, CollectionInterface, Injec
      */
     protected function getEventsManager() -> <EventsManagerInterface>
     {
-        return this->_modelsManager->getCustomEventsManager(this);
+        return this->_collectionManager->getCustomEventsManager(this);
     }
 
     /**
@@ -263,7 +273,7 @@ abstract class Collection implements EntityInterface, CollectionInterface, Injec
      */
     public function getCollectionManager() -> <ManagerInterface>
     {
-        return this->_modelsManager;
+        return this->_collectionManager;
     }
 
     /**
@@ -284,10 +294,12 @@ abstract class Collection implements EntityInterface, CollectionInterface, Injec
                 "_operationMade": true,
                 "_errorMessages": true,
                 "_modelsManager": true,
-                "_skipped":true
+                "_skipped":true,
+                "_db": true
             ];
             let self::_reserved = reserved;
         }
+        
         return reserved;
     }
 
@@ -298,13 +310,42 @@ abstract class Collection implements EntityInterface, CollectionInterface, Injec
      */
     protected function useImplicitObjectIds(boolean useImplicitObjectIds)
     {
-        this->_modelsManager->useImplicitObjectIds(this, useImplicitObjectIds);
+        this->_collectionManager->useImplicitObjectIds(this, useImplicitObjectIds);
+    }
+
+    /**
+     * Set DB name
+     *
+     * @throws Exception
+     */
+    protected function setDB(string! db) -> <CollectionInterface>
+    {
+        let this->_db = db;
+
+        return this;
+    }
+
+    /**
+     * Get DB name
+     * 
+     * @return string
+     */
+    public function getDB() -> string
+    {
+        var db;
+
+        let db = this->_db;
+        if !db {
+            return this->_collectionManager->getDB();
+        }
+
+        return db;
     }
 
     /**
      * Sets collection name which model should be mapped
      *
-     * @param string $source
+     * @param string source
      * @return \Scene\Mvc\CollectionInterface
      */
     protected function setSource(string! source) -> <CollectionInterface>
@@ -334,40 +375,23 @@ abstract class Collection implements EntityInterface, CollectionInterface, Injec
     /**
      * Sets the DependencyInjection connection service name
      *
-     * @param string $connectionService
+     * @param string connectionService
      * @return \Scene\Mvc\CollectionInterface
      */
     public function setConnectionService(string! connectionService) -> <CollectionInterface>
     {
-        this->_modelsManager->setConnectionService(this, connectionService);
+        this->_collectionManager->setConnectionService(this, connectionService);
         return this;
     }
 
     /**
      * Returns DependencyInjection connection service
      *
-     * @return string
+     * @return \MongoDB\Driver\Manager
      */
-    public function getConnectionService() -> string
+    public function getConnection() -> string
     {
-        return this->_modelsManager->getConnectionService(this);
-    }
-
-    /**
-     * Retrieves a database connection
-     *
-     * @return \MongoDb
-     */
-    public function getConnection()
-    {
-        var connection;
-
-        let connection = this->_connection;
-        if typeof connection != "object" {
-            let connection = this->_modelsManager->getConnection(this);
-            let this->_connection = connection;
-        }
-        return connection;
+        return this->_collectionManager->getConnection(this);
     }
 
     /**
@@ -407,7 +431,7 @@ abstract class Collection implements EntityInterface, CollectionInterface, Injec
     /**
      * Returns a cloned collection
      *
-     * @param \Scene\Mvc\CollectionInterface $collection
+     * @param \Scene\Mvc\CollectionInterface collection
      * @param array document
      * @return \Scene\Mvc\CollectionInterface
      */
@@ -430,104 +454,53 @@ abstract class Collection implements EntityInterface, CollectionInterface, Injec
     /**
      * Returns a collection resultset
      *
-     * @param array params
+     * @param array filter
+     * @param array options
      * @param \Scene\Mvc\CollectionInterface collection
-     * @param \MongoDb connection
      * @param boolean unique
-     * @return array
+     * @return array|boolean|\Scene\Mvc\CollectionInterface|\Scene\Mvc\Collection\Document
+     * @throws Exception
      */
-    protected static function _getResultset(var params, <CollectionInterface> collection, connection, boolean unique)
+    protected static function _getResultset(array filter = null, array options = null, <CollectionInterface> collection, boolean unique)
     {
-        var source, mongoCollection, conditions, base, documentsCursor,
-            fields, skip, limit, sort, document, collections;
-
-        let source = collection->getSource();
+        var db, source, query, cursor, result, base, collections, document;
+        
+        let db = collection->getDB(),
+            source = collection->getSource();
         if empty source {
             throw new Exception("Method getSource() returns empty string");
         }
 
-        let mongoCollection = connection->selectCollection(source);
+        let query = new Query(filter, options);
 
-        if typeof mongoCollection != "object" {
-            throw new Exception("Couldn't select mongo collection");
+        let cursor = collection->getCollectionManager()->executeQuery(collection, db, source, query);
+
+        let result = cursor->toArray();
+
+        if empty result {
+            return null;
         }
 
-        /**
-         * Convert the string to an array
-         */
-        if !fetch conditions, params[0] {
-            if !fetch conditions, params["conditions"] {
-                let conditions = [];
-            }
-        }
-
-        if typeof conditions != "array" {
-            throw new Exception("Find parameters must be an array");
-        }
-
-        /**
-         * Perform the find
-         */
-        if fetch fields, params["fields"] {
-            let documentsCursor = mongoCollection->find(conditions, fields);
-        } else {
-            let documentsCursor = mongoCollection->find(conditions);
-        }
-
-        /**
-         * Check if a "limit" clause was defined
-         */
-        if fetch limit, params["limit"] {
-            documentsCursor->limit(limit);
-        }
-
-        /**
-         * Check if a "sort" clause was defined
-         */
-        if fetch sort, params["sort"] {
-            documentsCursor->sort(sort);
-        }
-
-        /**
-         * Check if a "skip" clause was defined
-         */
-        if fetch skip, params["skip"] {
-            documentsCursor->skip(skip);
-        }
-
-        /**
-         * If a group of specific fields are requested we use a Scene\Mvc\Collection\Document instead
-         */
-        if isset params["fields"] {
-            let base = new Document();
+        if isset(options["fields"]) {
+            return result;
         } else {
             let base = collection;
         }
 
-        if unique === true {
-
-            /**
-             * Requesting a single result
-             */
-            documentsCursor->rewind();
-
-            let document = documentsCursor->current();
-
-            if typeof document != "array" {
-                return false;
-            }
+        if (unique === true) {
 
             /**
              * Assign the values to the base object
              */
-            return static::cloneResult(base, document);
+            return static::cloneResult(base, result[0]);
         }
 
         /**
          * Requesting a complete resultset
          */
         let collections = [];
-        for document in iterator_to_array(documentsCursor) {
+
+        for document in result {
 
             /**
              * Assign the values to the base object
@@ -536,71 +509,7 @@ abstract class Collection implements EntityInterface, CollectionInterface, Injec
         }
 
         return collections;
-    }
-
-    /**
-     * Perform a count over a resultset
-     *
-     * @param array params
-     * @param \Scene\Mvc\CollectionInterface collection
-     * @param \MongoDb connection
-     * @return int
-     */
-    protected static function _getGroupResultset(params, <CollectionInterface> collection, connection) -> int
-    {
-        var source, mongoCollection, conditions, limit, sort, documentsCursor;
-
-        let source = collection->getSource();
-        if empty source {
-            throw new Exception("Method getSource() returns empty string");
-        }
-
-        let mongoCollection = connection->selectCollection(source);
-
-        /**
-         * Convert the string to an array
-         */
-        if !fetch conditions, params[0] {
-            if !fetch conditions, params["conditions"] {
-                let conditions = [];
-            }
-        }
-
-        if isset params["limit"] || isset params["sort"] || isset params["skip"] {
-
-            /**
-             * Perform the find
-             */
-            let documentsCursor = mongoCollection->find(conditions);
-
-            /**
-             * Check if a "limit" clause was defined
-             */
-            if fetch limit, params["limit"] {
-                documentsCursor->limit(limit);
-            }
-
-            /**
-             * Check if a "sort" clause was defined
-             */
-            if fetch sort, params["sort"] {
-                documentsCursor->sort(sort);
-            }
-
-            /**
-             * Check if a "skip" clause was defined
-             */
-            if fetch sort, params["skip"] {
-                documentsCursor->skip(sort);
-            }
-
-            /**
-             * Only "count" is supported
-             */
-            return count(documentsCursor);
-        }
-
-        return mongoCollection->count(conditions);
+        
     }
 
     /**
@@ -672,10 +581,10 @@ abstract class Collection implements EntityInterface, CollectionInterface, Injec
                 return false;
             }
 
-            if exists {
-                let eventName = "beforeUpdate";
-            } else {
+            if !exists {               
                 let eventName = "beforeCreate";
+            } else {
+                let eventName = "beforeUpdate";
             }
 
             if this->fireEventCancel(eventName) === false {
@@ -692,20 +601,20 @@ abstract class Collection implements EntityInterface, CollectionInterface, Injec
      *
      * @param boolean disableEvents
      * @param boolean success
-     * @param boolean $exists
+     * @param boolean exists
      * @return boolean
      */
     protected final function _postSave(boolean disableEvents, boolean success, boolean exists) -> boolean
     {
         var eventName;
 
-        if success === true {
+        if success {
             if !disableEvents {
 
-                if exists === true {
-                    let eventName = "afterUpdate";
-                } else {
+                if !exists {
                     let eventName = "afterCreate";
+                } else {                  
+                    let eventName = "afterUpdate";
                 }
                 this->fireEvent(eventName);
 
@@ -719,6 +628,75 @@ abstract class Collection implements EntityInterface, CollectionInterface, Injec
         }
 
         this->_cancelOperation(disableEvents);
+        return false;
+    }
+
+    /**
+     * Fires an internal event
+     *
+     * @param string eventName
+     * @return boolean
+     */
+    public function fireEvent(string! eventName) -> boolean
+    {
+        /**
+         * Check if there is a method with the same name of the event
+         */
+        if method_exists(this, eventName) {
+            this->{eventName}();
+        }
+
+        /**
+         * Send a notification to the events manager
+         */
+        return this->_collectionManager->notifyEvent(eventName, this);
+    }
+
+    /**
+     * Fires an internal event that cancels the operation
+     *
+     * @param string eventName
+     * @return boolean
+     */
+    public function fireEventCancel(string! eventName) -> boolean
+    {
+        /**
+         * Check if there is a method with the same name of the event
+         */
+        if method_exists(this, eventName) {
+            if this->{eventName}() === false {
+                return false;
+            }
+        }
+
+        /**
+         * Send a notification to the events manager
+         */
+        if this->_collectionManager->notifyEvent(eventName, this) === false {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Cancel the current operation
+     *
+     * @param boolean disableEvents
+     * @return boolean
+     */
+    protected function _cancelOperation(boolean disableEvents) -> boolean
+    {
+        var eventName;
+
+        if !disableEvents {
+            if this->_operationMade == self::OP_DELETE {
+                let eventName = "notDeleted";
+            } else {
+                let eventName = "notSaved";
+            }
+            this->fireEvent(eventName);
+        }
         return false;
     }
 
@@ -797,447 +775,192 @@ abstract class Collection implements EntityInterface, CollectionInterface, Injec
     }
 
     /**
-     * Fires an internal event
+     * Find a document by its id (_id)
      *
-     * @param string eventName
-     * @return boolean
+     * @param string|\MongoDB\BSON\ObjectId id
+     * @return \Scene\Mvc\CollectionInterface
+     * @throws Exception
      */
-    public function fireEvent(string! eventName) -> boolean
-    {
-        /**
-         * Check if there is a method with the same name of the event
-         */
-        if method_exists(this, eventName) {
-            this->{eventName}();
-        }
+    public static function findById(var id) {
+        var className, collection, oid, filter, options;
 
-        /**
-         * Send a notification to the events manager
-         */
-        return this->_modelsManager->notifyEvent(eventName, this);
-    }
+        let className = get_called_class(),
+            collection = new {className}();
 
-    /**
-     * Fires an internal event that cancels the operation
-     *
-     * @param string eventName
-     * @return boolean
-     */
-    public function fireEventCancel(string! eventName) -> boolean
-    {
-        /**
-         * Check if there is a method with the same name of the event
-         */
-        if method_exists(this, eventName) {
-            if this->{eventName}() === false {
-                return false;
-            }
-        }
-
-        /**
-         * Send a notification to the events manager
-         */
-        if this->_modelsManager->notifyEvent(eventName, this) === false {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Cancel the current operation
-     *
-     * @param boolean disableEvents
-     * @return boolean
-     */
-    protected function _cancelOperation(boolean disableEvents) -> boolean
-    {
-        var eventName;
-
-        if !disableEvents {
-            if this->_operationMade == self::OP_DELETE {
-                let eventName = "notDeleted";
-            } else {
-                let eventName = "notSaved";
-            }
-            this->fireEvent(eventName);
-        }
-        return false;
-    }
-
-    /**
-     * Checks if the document exists in the collection
-     *
-     * @param \MongoCollection collection
-     * @return boolean
-     */
-    protected function _exists(collection) -> boolean
-    {
-        var id, mongoId;
-
-        if !fetch id, this->_id {
-            return false;
-        }
-
-        if typeof id == "object" {
-            let mongoId = id;
-        } else {
+        if typeof id !== "object" {
 
             /**
              * Check if the model use implicit ids
              */
-            if this->_modelsManager->isUsingImplicitObjectIds(this) {
-                let mongoId = new \MongoId(id);
-                let this->_id = mongoId;
+            if collection->getCollectionManager()->isUsingImplicitObjectIds(collection) {
+                let oid = new ObjectId(id);
             } else {
-                let mongoId = id;
+                let oid = id;
             }
         }
 
-        /**
-         * Perform the count using the function provided by the driver
-         */
-        return collection->count(["_id": mongoId]) > 0;
+        let filter = ["id": oid],
+            options = ["limit": 1];
+
+        return static::_getResultset(filter, options, collection, true);
+
     }
 
     /**
-     * Returns all the validation messages
+     * Allows to query the first record that match the specified conditions
      *
-     * <code>
-     * $robot = new Robots();
-     * $robot->type = 'mechanical';
-     * $robot->name = 'Astro Boy';
-     * $robot->year = 1952;
-     * if ($robot->save() == false) {
-     *  echo "Umh, We can't store robots right now ";
-     *  foreach ($robot->getMessages() as message) {
-     *      echo message;
-     *  }
-     *} else {
-     *  echo "Great, a new robot was saved successfully!";
-     *}
-     * </code>
-     *
-     * @return \Scene\Mvc\Collection\MessageInterface[]|null
+     * @param array filter
+     * @param array options
+     * @return \Scene\Mvc\CollectionInterface
+     * @throws Exception
      */
-    public function getMessages() -> <MessageInterface[]>
+    public static function findFirst(array filter = [], array options = [])
     {
-        return this->_errorMessages;
+        var className, collection;
+
+        let className = get_called_class(),
+            collection = new {className}();
+
+        let options = array_merge(options, ["limit": 1]);
+
+        return static::_getResultset(filter, options, collection, true);
     }
 
     /**
-     * Appends a customized message on the validation process
+     * Allows to query a set of records that match the specified conditions
      *
-     *<code>
-     *  use \Scene\Mvc\Collection\Message as Message;
-     *
-     *  class Robots extends \Scene\Mvc\Collection
-     *  {
-     *
-     *      public function beforeSave()
-     *      {
-     *          if ($this->name == 'Peter') {
-     *              message = new Message("Sorry, but a robot cannot be named Peter");
-     *              $this->appendMessage(message);
-     *          }
-     *      }
-     *  }
-     *</code>
+     * @param array filter
+     * @param array options
+     * @return array
+     * @throws Exception
      */
-    public function appendMessage(<MessageInterface> message)
+    public static function find(array filter = [], array options = [])
     {
-        let this->_errorMessages[] = message;
+        var className, collection;
+
+        let className = get_called_class(),
+            collection = new {className}();
+
+        return static::_getResultset(filter, options, collection, false);
     }
 
     /**
-     * Creates/Updates a collection based on the values in the attributes
+     * Creates/Updates a collection based on the values in the atributes
      *
-     * @return boolean
+     * @return boolean|\Scene\Mvc\CollectionInterface
+     * @throws Exception
      */
-    public function save() -> boolean
+    public function save()
     {
-        var dependencyInjector, connection, exists, source, data,
-            success, status, id, ok, collection, disableEvents;
+        var dependencyInjector, db, source, data, exists, bulk, id, filter, options, disableEvents,
+            success, result;
 
         let dependencyInjector = this->_dependencyInjector;
         if typeof dependencyInjector != "object" {
             throw new Exception("A dependency injector container is required to obtain the services related to the ORM");
         }
 
-        let source = this->getSource();
+        let db = this->getDB(),
+            source = this->getSource();
         if empty source {
             throw new Exception("Method getSource() returns empty string");
         }
 
-        let connection = this->getConnection();
-
-        /**
-         * Choose a collection according to the collection name
-         */
-        let collection = connection->selectCollection(source);
+        let data = this->toArray();
 
         /**
          * Check the dirty state of the current operation to update the current operation
          */
-        let exists = this->_exists(collection);
+        let exists = this->_exists(this);
 
-        if exists === false {
+        let bulk = new BulkWrite();
+
+        if !exists {
             let this->_operationMade = self::OP_CREATE;
+            let id = bulk->insert(data);
         } else {
             let this->_operationMade = self::OP_UPDATE;
+
+            let filter = ["_id": this->_id],
+                options = ["limit": 1, "upsert": false];
+            bulk->update(filter, data, options);
         }
 
         /**
          * The messages added to the validator are reset here
          */
-        let this->_errorMessages = [];
+        let this->_operationMade = [];
 
         let disableEvents = self::_disableEvents;
 
         /**
          * Execute the preSave hook
          */
-        if this->_preSave(dependencyInjector, disableEvents, exists) === false {
-            return false;
+        if this->_postSave(dependencyInjector, disableEvents, exists) === false {
+            return true;
         }
-
-        let data = this->toArray();
 
         let success = false;
 
-        /**
-         * We always use safe stores to get the success state
-         * Save the document
-         */
-        let status = collection->save(data, ["w": true]);
-        if typeof status == "array" {
-            if fetch ok, status["ok"] {
-                if ok {
+        let result = this->_collectionManager->executeBulkWrite(this, db, source, bulk);
+
+        if empty result->getWriteErrors() {
+
+            if !exists {
+                if result->getInsertedCount() > 0 {
+                    let this->_id = id;
                     let success = true;
-                    if exists === false {
-                        if fetch id, data["_id"] {
-                            let this->_id = id;
-                        }
-                    }
                 }
+            } else {
+                let success = true;
             }
-        } else {
-            let success = false;
         }
 
         /**
          * Call the postSave hooks
          */
-        return this->_postSave(disableEvents, success, exists);
+        return this->_postSave(disableEvents, success, exists);       
     }
 
     /**
-     * Find a document by its id (_id)
+     * Creates/Updates a collection based on the values in the atributes
      *
-     * @param string|\MongoId id
-     * @return \Scene\Mvc\CollectionInterface
+     * @param array filter
+     * @param array options
+     * @return boolean
+     * @throws Exception
      */
-    public static function findById(id) -> <CollectionInterface>
+    public function update(array filter = [], array options = [])
     {
-        var className, collection, mongoId;
+        var db, source, update, bulk, result;
 
-        if typeof id != "object" {
+        let db = this->getDB(),
+            source = this->getSource();
+        if empty source {
+            throw new Exception("Method getSource() returns empty string");
+        }
 
-            let className = get_called_class();
+        let update = this->toArray();
 
-            let collection = new {className}();
+        if empty options {
+            let options = ["limit": 0, "upsert": false];
+        }
 
-            /**
-             * Check if the model use implicit ids
-             */
-            if collection->getCollectionManager()->isUsingImplicitObjectIds(collection) {
-                let mongoId = new \MongoId(id);
-            } else {
-                let mongoId = id;
-            }
+        let bulk = new BulkWrite();
+            bulk->update(filter, update, options);
 
+        let result = this->getCollectionManager()->executeBulkWrite(this, db, source, bulk);
+
+        if empty result->getWriteErrors() {
+            return true;
         } else {
-            let mongoId = id;
+            return false;
         }
 
-        return static::findFirst([["_id": mongoId]]);
+        return false;
     }
 
-    /**
-     * Allows to query the first record that match the specified conditions
-     *
-     * <code>
-     *
-     * //What's the first robot in the robots table?
-     * $robot = Robots::findFirst();
-     * echo "The robot name is ", $robot->name, "\n";
-     *
-     * //What's the first mechanical robot in robots table?
-     * $robot = Robots::findFirst(array(
-     *     array("type" => "mechanical")
-     * ));
-     * echo "The first mechanical robot name is ", $robot->name, "\n";
-     *
-     * //Get first virtual robot ordered by name
-     * $robot = Robots::findFirst(array(
-     *     array("type" => "mechanical"),
-     *     "sort" => array("name" => 1)
-     * ));
-     * echo "The first virtual robot name is ", $robot->name, "\n";
-     * </code>
-     *
-     * @param array|null parameters
-     * @return array
-     */
-    public static function findFirst(array parameters = null) -> array
-    {
-        var className, collection, connection;
-
-        let className = get_called_class();
-        let collection = new {className}();
-        let connection = collection->getConnection();
-        return static::_getResultset(parameters, collection, connection, true);
-    }
-
-    /**
-     * Allows to query a set of records that match the specified conditions
-     *
-     * <code>
-     *
-     * //How many robots are there?
-     * $robots = Robots::find();
-     * echo "There are ", count($robots), "\n";
-     *
-     * //How many mechanical robots are there?
-     * $robots = Robots::find(array(
-     *     array("type" => "mechanical")
-     * ));
-     * echo "There are ", count(robots), "\n";
-     *
-     * //Get and print virtual robots ordered by name
-     * $robots = Robots::findFirst(array(
-     *     array("type" => "virtual"),
-     *     "order" => array("name" => 1)
-     * ));
-     * foreach ($robots as $robot) {
-     *     echo $robot->name, "\n";
-     * }
-     *
-     * //Get first 100 virtual robots ordered by name
-     * $robots = Robots::find(array(
-     *     array("type" => "virtual"),
-     *     "order" => array("name" => 1),
-     *     "limit" => 100
-     * ));
-     * foreach ($robots as $robot) {
-     *     echo $robot->name, "\n";
-     * }
-     * </code>
-     *
-     * @param array|null $parameters
-     * @return array
-     */
-    public static function find(array parameters = null) -> array
-    {
-        var className, collection, connection;
-
-        let className = get_called_class();
-        let collection = new {className}();
-        let connection = collection->getConnection();
-        return static::_getResultset(parameters, collection, connection, false);
-    }
-
-    /**
-     * Perform a count over a collection
-     *
-     *<code>
-     * echo 'There are ', Robots::count(), ' robots';
-     *</code>
-     *
-     * @param array|null $parameters
-     * @return int
-     */
-    public static function count(array parameters = null) -> int
-    {
-        var className, collection, connection;
-
-        let className = get_called_class();
-        let collection = new {className}();
-        let connection = collection->getConnection();
-        return static::_getGroupResultset(parameters, collection, connection);
-    }
-
-    /**
-     * Perform an aggregation using the Mongo aggregation framework
-     *
-     * @param array $parameters
-     * @return array|null
-     */
-    public static function aggregate(array parameters = null) -> array
-    {
-        var className, collection, connection, source;
-
-        let className = get_called_class();
-        let collection = new {className}();
-        let connection = collection->getConnection();
-
-        let source = collection->getSource();
-        if empty source {
-            throw new Exception("Method getSource() returns empty string");
-        }
-
-        return connection->selectCollection(source)->aggregate(parameters);
-    }
-
-    /**
-     * Allows to perform a summatory group for a column in the collection
-     *
-     * @param string $field
-     * @param array|null $conditions
-     * @param string|null $finalize
-     * @return array|null
-     */
-    public static function summatory(string! field, conditions = null, finalize = null) -> array
-    {
-        var className, model, connection, source, collection, initial,
-            reduce, group, retval, firstRetval;
-
-        let className = get_called_class();
-        let model = new {className}();
-        let connection = model->getConnection();
-
-        let source = model->getSource();
-        if empty source {
-            throw new Exception("Method getSource() returns empty string");
-        }
-
-        let collection = connection->selectCollection(source);
-
-        /**
-         * Uses a javascript hash to group the results
-         */
-        let initial = ["summatory": []];
-
-        /**
-         * Uses a javascript hash to group the results, however this is slow with larger datasets
-         */
-        let reduce = "function (curr, result) { if (typeof result.summatory[curr." . field . "] === \"undefined\") { result.summatory[curr." . field . "] = 1; } else { result.summatory[curr." . field . "]++; } }";
-
-        let group = collection->group([], initial, reduce);
-
-        if fetch retval, group["retval"] {
-            if fetch firstRetval, retval[0] {
-                if isset firstRetval["summatory"] {
-                    return firstRetval["summatory"];
-                }
-                return firstRetval;
-            }
-            return retval;
-        }
-
-        return [];
-    }
-
+ 
     /**
      * Deletes a model instance. Returning true on success or false otherwise.
      *
@@ -1254,9 +977,8 @@ abstract class Collection implements EntityInterface, CollectionInterface, Injec
      */
     public function delete() -> boolean
     {
-        var disableEvents, status, id, connection, source,
-            collection, mongoId, success, ok;
-
+        var id, disableEvents, db, source, oid, success, filter, options, bulk, result;
+        
         if !fetch id, this->_id {
             throw new Exception("The document cannot be deleted because it doesn't exist");
         }
@@ -1273,51 +995,50 @@ abstract class Collection implements EntityInterface, CollectionInterface, Injec
             return true;
         }
 
-        let connection = this->getConnection();
-
-        let source = this->getSource();
+        let db = this->getDB(),
+            source = this->getSource();
         if empty source {
             throw new Exception("Method getSource() returns empty string");
         }
 
-        /**
-         * Get the \MongoCollection
-         */
-        let collection = connection->selectCollection(source);
-
         if typeof id == "object" {
-            let mongoId = id;
+            let oid = id;
         } else {
-            
+
             /**
              * Is the collection using implicit object Ids?
              */
-            if this->_modelsManager->isUsingImplicitObjectIds(this) {
-                let mongoId = new \MongoId(id);
+            if this->_collectionManager->isUsingImplicitObjectIds(this) {
+                let oid = new ObjectId(id);
             } else {
-                let mongoId = id;
+                let oid = id;
             }
         }
 
         let success = false;
 
-        /**
-         * Remove the instance
-         */
-        let status = collection->remove(["_id": mongoId], ["w": true]);
-        if typeof status != "array" {
-            return false;
-        }
+        // Specify the search criteria
+        let filter = ["_id": oid];
 
-        /**
-         * Check the operation status
-         */
-        if fetch ok, status["ok"] {
-            if ok {
-                let success = true;
-                if !disableEvents {
-                    this->fireEvent("afterDelete");
-                }
+        /* Specify some command options for the update:
+         *
+         *  * limit (integer): Deletes all matching documents when 0 (false). Otherwise,
+         *    only the first matching document is deleted. */
+        let options = ["limti": 1];
+        
+        // Create a bulk write object and add our delete operation
+        let bulk = new BulkWrite();
+            bulk->delete(filter, options);
+
+        /* Specify the full namespace as the first argument, followed by the bulk
+         * write object and an optional write concern. MongoDB\Driver\WriteResult is
+         * returned on success; otherwise, an exception is thrown. */
+        let result = this->getCollectionManager()->executeBulkWrite(this, db, source, bulk);
+
+        if (result->getDeletedCount() > 0) && empty (result->getWriteErrors()) {
+            let success = true;
+            if !disableEvents {
+                this->fireEvent("afterDelete");
             }
         } else {
             let success = false;
@@ -1327,23 +1048,142 @@ abstract class Collection implements EntityInterface, CollectionInterface, Injec
     }
 
     /**
-     * Sets up a behavior in a collection
+     * Deletes some collections instance. Returning true on success or false otherwise.
      *
-     * @param Scene\Mvc\Collection\BehaviorInterface behavior
+     * @param array filter
+     * @param array options
+     * @param boolean mode
+     * @return boolean|int
      */
-    protected function addBehavior(<BehaviorInterface> behavior) -> void
+    public static function deleteMany(array filter = null, array options = null, boolean mode = true)
     {
-        (<ManagerInterface> this->_modelsManager)->addBehavior(this, behavior);
+        var documents, document, className, collection, db, source, bulk, result;
+
+        if mode {
+            let documents = static::find(filter, options);
+
+            if documents {
+                for document in documents {
+                    document->delete();
+                }
+            }
+
+            return count(documents);
+        } else {
+
+            let className = get_called_class(),
+                collection = new {className}();
+
+            let db = collection->getDB(),
+                source = collection->getSource();
+            if empty source {
+                throw new Exception("Method getSource() returns empty string");
+            }
+
+            /* Specify some command options for the update:
+             *
+             *  * limit (integer): Deletes all matching documents when 0 (false). Otherwise,
+             *    only the first matching document is deleted. */
+            if empty options {
+                let options = ["limit": 0];
+            }
+
+            // Create a bulk write object and add our delete operation
+            let bulk = new BulkWrite();
+                bulk->delete(filter, options);
+
+            /* Specify the full namespace as the first argument, followed by the bulk
+             * write object and an optional write concern. MongoDB\Driver\WriteResult is
+             * returned on success; otherwise, an exception is thrown. */
+            let result = collection->getCollectionManager()->executeBulkWrite(collection, db, source, bulk);
+
+            if empty result->getWriteErrors() {
+                return result->getDeletedCount();
+            } else {
+                return false;
+            }
+        }
     }
 
     /**
-     * Skips the current operation forcing a success state
+     * Perform a count over a collection
      *
-     * @param boolean skip
+     *<code>
+     * echo 'There are ', Robots::count(), ' robots';
+     *</code>
+     *
+     * @param array filter
+     * @param array options
+     * @return int
+     * @throws Exception
      */
-    public function skipOperation(boolean skip)
+    public static function count(array filter = null, array options = null)
     {
-        let this->_skipped = skip;
+        var className, collection, db, source, cmd, option, command, result;
+
+        let className = get_called_class(),
+            collection = new {className}();
+
+        let db = collection->getDB(),
+            source = collection->getSource();
+        if empty source {
+            throw new Exception("Method getSource() returns empty string");
+        }
+
+        let cmd = ["count": source];
+
+        if !empty filter {
+            let cmd["query"] = (object) filter;
+        }
+
+        for option in ["hint", "limit", "maxTimeMS", "skip"] {
+            if isset options[option] {
+                let cmd[option] = options[option];
+            }
+        }
+
+        let command = new Command(cmd);
+
+        let result = collection->getCollectionManager()->executeCommand(collection, db, command);
+
+        return (int) result->n;
+    }
+    
+
+
+    /**
+     * Checks if the document exists in the collection
+     *
+     * @param \Scene\Mvc\CollectionInterface collection
+     * @return boolean
+     * @throws Exception
+     */
+    protected function _exists(<CollectionInterface> collection) -> boolean
+    {
+        var id, oid;
+
+        if !fetch id, collection->_id {
+            return false;
+        }
+
+        if typeof id == "object" {
+            let oid = id;
+        } else {
+
+            /**
+             * Check if the model use implicit ids
+             */
+            if this->_collectionManager->isUsingImplicitObjectIds(this) {
+                let oid = new ObjectId(id);
+            } else {
+                let oid = id;
+            }
+        }
+
+        /**
+         * Perform the count using the function provided by the driver
+         */
+        return collection->count(["_id": oid]) > 0;
     }
 
     /**
@@ -1439,5 +1279,64 @@ abstract class Collection implements EntityInterface, CollectionInterface, Injec
                 let this->{key} = value;
             }
         }
+    }
+
+    /**
+     * Returns all the validation messages
+     *
+     * <code>
+     * $robot = new Robots();
+     * $robot->type = 'mechanical';
+     * $robot->name = 'Astro Boy';
+     * $robot->year = 1952;
+     * if ($robot->save() == false) {
+     *  echo "Umh, We can't store robots right now ";
+     *  foreach ($robot->getMessages() as message) {
+     *      echo message;
+     *  }
+     *} else {
+     *  echo "Great, a new robot was saved successfully!";
+     *}
+     * </code>
+     *
+     * @return \Scene\Mvc\Collection\MessageInterface[]|null
+     */
+    public function getMessages() -> <MessageInterface[]>
+    {
+        return this->_errorMessages;
+    }
+
+    /**
+     * Appends a customized message on the validation process
+     *
+     *<code>
+     *  use \Scene\Mvc\Collection\Message as Message;
+     *
+     *  class Robots extends \Scene\Mvc\Collection
+     *  {
+     *
+     *      public function beforeSave()
+     *      {
+     *          if ($this->name == 'Peter') {
+     *              message = new Message("Sorry, but a robot cannot be named Peter");
+     *              $this->appendMessage(message);
+     *          }
+     *      }
+     *  }
+     *</code>
+     */
+    public function appendMessage(<MessageInterface> message)
+    {
+        let this->_errorMessages[] = message;
+    }
+
+    /**
+     * Skips the current operation forcing a success state
+     *
+     * @param boolean skip
+     */
+    public function skipOperation(boolean skip)
+    {
+        let this->_skipped = skip;
     }
 }

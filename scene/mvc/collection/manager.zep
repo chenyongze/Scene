@@ -11,6 +11,13 @@ use Scene\Mvc\CollectionInterface;
 use Scene\Mvc\Collection\BehaviorInterface;
 use Scene\Events\EventsAwareInterface;
 use Scene\Events\ManagerInterface as EventsManagerInterface;
+use MongoDB\Driver\Manage;
+use MongoDB\Driver\WriteConcern;
+use MongoDB\Driver\ReadPreference;
+use MongoDB\Driver\BulkWrite;
+use MongoDB\Driver\Query;
+use MongoDB\Driver\Command;
+use MongoDB\Driver\WriteResult;
 
 /**
  * Scene\Mvc\Collection\Manager
@@ -40,6 +47,22 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
      * @access protected
     */
     protected _dependencyInjector;
+
+    /**
+     * Default DB
+     *
+     * @var string
+     * @access protected
+     */
+    protected _defaultDB;
+
+    /**
+     * DB
+     *
+     * @var string
+     * @access protected
+     */
+    protected _db;
 
     /**
      * Initialized
@@ -82,6 +105,21 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
     protected _connectionServices;
 
     /**
+     * Write Concern
+     * 
+     * @var MongoDB\Driver\WriteConcern|null
+     * @access protected
+     */
+    protected _writeConcern;
+
+    /**
+     * Read Preference
+     * @var MongoDB\Driver\ReadPreference|null
+     * @access protected
+     */
+    protected _readPreference;
+
+    /**
      * Implicit Object Ids
      *
      * @var null|array
@@ -90,12 +128,14 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
     protected _implicitObjectsIds;
 
     /**
-     * Behaviors
-     *
-     * @var null|array
-     * @access protected
-    */
-    protected _behaviors;
+     * Magager construct
+     * 
+     * @param string $defaultDB
+     */
+    public function __construct(string defaultDB = null)
+    {
+        let this->_defaultDB = defaultDB;
+    }
 
     /**
      * Sets the DependencyInjector container
@@ -168,55 +208,55 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
     }
 
     /**
-     * Initializes a model in the models manager
+     * Initializes a collection in the collections manager
      *
-     * @param \Scene\Mvc\CollectionInterface $model
+     * @param \Scene\Mvc\CollectionInterface collection
      */
-    public function initialize(<CollectionInterface> model) -> void
+    public function initialize(<CollectionInterface> collection) -> void
     {
         var className, initialized, eventsManager;
 
-        let className = get_class_lower(model);
+        let className = get_class_lower(collection);
         let initialized = this->_initialized;
 
         /**
-         * Models are just initialized once per request
+         * Collections are just initialized once per request
          */
         if !isset initialized[className] {
 
             /**
              * Call the 'initialize' method if it's implemented
              */
-            if method_exists(model, "initialize") {
-                model->{"initialize"}();
+            if method_exists(collection, "initialize") {
+                collection->{"initialize"}();
             }
 
             /**
-             * If an EventsManager is available we pass to it every initialized model
+             * If an EventsManager is available we pass to it every initialized collection
              */
             let eventsManager = this->_eventsManager;
             if typeof eventsManager == "object" {
-                eventsManager->fire("collectionManager:afterInitialize", model);
+                eventsManager->fire("collectionManager:afterInitialize", collection);
             }
 
-            let this->_initialized[className] = model;
-            let this->_lastInitialized = model;
+            let this->_initialized[className] = collection;
+            let this->_lastInitialized = collection;
         }
     }
 
     /**
-     * Check whether a model is already initialized
+     * Check whether a collection is already initialized
      *
-     * @param string modelName
+     * @param string collectionName
      * @return bool
      */
-    public function isInitialized(string! modelName) -> boolean
+    public function isInitialized(string! collectionName) -> boolean
     {
-        return isset this->_initialized[strtolower(modelName)];
+        return isset this->_initialized[strtolower(collectionName)];
     }
 
     /**
-     * Get the latest initialized model
+     * Get the latest initialized collection
      *
      * @return \Scene\Mvc\CollectionInterface
      */
@@ -226,64 +266,58 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
     }
 
     /**
-     * Sets a connection service for a specific model
+     * Set DB name
      *
-     * @param \Scene\Mvc\CollectionInterface model
+     * @throws Exception
+     */
+    public function setDB(string db = null)
+    {
+        let this->_db = db;
+    }
+
+    /**
+     * Get DB name
+     * 
+     * @return string
+     */
+    public function getDB()
+    {
+        if this->_db {
+            return this->_db;
+        } else {
+            return this->_defaultDB;
+        }
+    }
+
+    /**
+     * Sets a connection service for a specific collection
+     *
+     * @param \Scene\Mvc\CollectionInterface collection
      * @param string connectionService
      */
-    public function setConnectionService(<CollectionInterface> model, string! connectionService) -> void
+    public function setConnectionService(<CollectionInterface> collection, string! connectionService) -> void
     {
-        let this->_connectionServices[get_class(model)] = connectionService;
+        let this->_connectionServices[get_class(collection)] = connectionService;
     }
 
     /**
-     * Sets whether a model must use implicit objects ids
+     * Returns the connection related to a collection
      *
-     * @param \Scene\Mvc\CollectionInterface $model
-     * @param boolean $useImplicitObjectIds
+     * @param \Scene\Mvc\CollectionInterface collection
+     * @return \MongoDB\Driver\Manage
+     * @throws Exception
      */
-    public function useImplicitObjectIds(<CollectionInterface> model, boolean useImplicitObjectIds) -> void
+    public function getConnection(<CollectionInterface> collection) -> <Manage>
     {
-        let this->_implicitObjectsIds[get_class(model)] = useImplicitObjectIds;
-    }
+        var service, connectionService, entityName, dependencyInjector, connection;
 
-    /**
-     * Checks if a model is using implicit object ids
-     *
-     * @param \Scene\Mvc\CollectionInterface $model
-     * @return boolean
-     */
-    public function isUsingImplicitObjectIds(<CollectionInterface> model) -> boolean
-    {
-        var implicit;
-
-        /**
-         * All collections use by default are using implicit object ids
-         */
-        if fetch implicit, this->_implicitObjectsIds[get_class(model)] {
-            return implicit;
-        }
-
-        return true;
-    }
-
-    /**
-     * Returns the connection related to a model
-     *
-     * @param \Scene\Mvc\CollectionInterface model
-     * @return \Mongo
-     */
-    public function getConnection(<CollectionInterface> model)
-    {
-        var service, connectionService, connection, dependencyInjector, entityName;
-
-        let service = "mongo";
-        let connectionService = this->_connectionServices;
+        let service = "mongo",
+            connectionService = this->_connectionServices;
         if typeof connectionService == "array" {
-            let entityName = get_class(model);
+            let entityName = get_class(collection);
 
             /**
-             * Check if the model has a custom connection service
+             * Check if the collection has a custom connection service
              */
             if isset connectionService[entityName] {
                 let service = connectionService[entityName];
@@ -298,12 +332,192 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
         /**
          * Request the connection service from the DI
          */
-        let connection = dependencyInjector->getShared(service);
+        let connection = this->_dependencyInjector->getShared(service);
         if typeof connection != "object" {
             throw new Exception("Invalid injected connection service");
         }
 
         return connection;
+    }
+
+    /**
+     * Set Write Concern
+     * 
+     * @param MongoDB\Driver\WriteConcern $writeConcern
+     */
+    public function setWriteConcern(<WriteConcern> writeConcern) -> void
+    {
+        let this->_writeConcern = writeConcern;
+    }
+
+    /**
+     * Get Write Concern
+     * 
+     * @return MongoDB\Driver\WriteConcern
+     */
+    public function getWriteConcern() -> <WriteConcern>
+    {
+        var writeConcern, wc;
+
+        let writeConcern = this->_writeConcern;
+
+        if !writeConcern {
+            // Construct a write concern
+            let wc = new WriteConcern(
+                // Guarantee that writes are acknowledged by a majority of our nodes
+                WriteConcern::MAJORITY,
+                // But only wait 1000ms because we have an application to run!
+                1000
+            );
+
+            let this->_writeConcern = wc;
+            return wc;
+        }
+
+        return writeConcern;
+    }
+
+    /**
+     * Set Read Preference
+     * 
+     * @param MongoDB\Driver\ReadPreference $readPreference
+     */
+    public function setReadPreference(<ReadPreference> readPreference) -> void
+    {
+        let this->_readPreference = readPreference;
+    }
+
+    /**
+     * Set read preference
+     * 
+     * @return MongoDB\Driver\ReadPreference;
+     */
+    public function getReadPreference() -> <ReadPreference>
+    {
+        var readPreference, rp;
+
+        let readPreference = this->_readPreference;
+
+        if !readPreference {
+            // Construct a read preference
+            let rp = new ReadPreference(
+                /* We prefer to read from a secondary, but are OK with reading from the
+                 * primary if necessary (e.g. secondaries are offline) */
+                ReadPreference::RP_SECONDARY_PREFERRED
+            );
+
+            let this->_readPreference = rp;
+            return rp;
+        }
+
+        return readPreference;
+    }
+
+    /**
+     * Sets whether a collection must use implicit objects ids
+     *
+     * @param \Scene\Mvc\CollectionInterface collection
+     * @param boolean useImplicitObjectIds
+     */
+    public function useImplicitObjectIds(<CollectionInterface> collection, boolean useImplicitObjectIds) -> void
+    {
+        let this->_implicitObjectsIds[get_class(collection)] = useImplicitObjectIds;
+    }
+
+    /**
+     * Checks if a collection is using implicit object ids
+     *
+     * @param \Scene\Mvc\CollectionInterface collection
+     * @return boolean
+     */
+    public function isUsingImplicitObjectIds(<CollectionInterface> collection) -> boolean
+    {
+        var implicit;
+
+        /**
+         * All collections use by default are using implicit object ids
+         */
+        if fetch implicit, this->_implicitObjectsIds[get_class(collection)] {
+            return implicit;
+        }
+
+        return true;
+    }
+
+    /**
+     * Executes query on a server
+     * 
+     * @param  \Scene\Mvc\CollectionInterface collection
+     * @param  string db
+     * @param  string source
+     * @param  \MongoDB\Driver\Query bulk
+     * @return \MongoDB\Driver\WriteResult
+     */
+    public function executeQuery(<CollectionInterface> collection, string db, string source, <Query> query) -> <WriteResult>
+    {
+        var dbCollection, connection;
+
+        if !db {
+            let db = (string) this->getDB();
+        }
+
+        let dbCollection = db . "." . source;
+
+        let connection = this->getConnection(collection);
+
+        /* Specify the full namespace as the first argument, followed by the query
+         * object and an optional read preference. MongoDB\Driver\Cursor is returned
+         * success; otherwise, an exception is thrown. */
+        return connection->executeQuery(dbCollection, query, this->getReadPreference());
+    }
+
+    /**
+     * Executes one or more write operations on the primary server.
+     * 
+     * @param  \Scene\Mvc\CollectionInterface collection
+     * @param  string db
+     * @param  string source
+     * @param  \MongoDB\Driver\BulkWrite bulk
+     * @return \MongoDB\Driver\WriteResult
+     */
+    public function executeBulkWrite(<CollectionInterface> collection, string db, string source, <BulkWrite> bulk) -> <WriteResult>
+    {
+        var dbCollection, connection;
+
+        if !db {
+            let db = (string) this->getDB();
+        }
+
+        let dbCollection = db . "." . source;
+
+        let connection = this->getConnection(collection);
+
+        /* Specify the full namespace as the first argument, followed by the bulk
+         * write object and an optional write concern. MongoDB\Driver\WriteResult is
+         * returned on success; otherwise, an exception is thrown. */
+        return connection->executeBulkWrite(dbCollection, bulk, this->getWriteConcern());
+    }
+
+    /**
+     * Execute a database command
+     * 
+     * @param  \Scene\Mvc\CollectionInterface $collection
+     * @param  string $db
+     * @param  \MongoDB\Driver\Command $command
+     * @return array
+     */
+    public function executeCommand(<CollectionInterface> collection, string db, string source, <command> command) -> array
+    {
+        var connection, cursor;
+        
+        if !db {
+            let db = (string) this->getDB();
+        }
+
+        let connection = this->getConnection(collection);
+
+        let cursor = connection->executeCommand(db, command, this->getReadPreference());
+        return current(cursor->toArray());
     }
 
     /**
@@ -316,23 +530,7 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
      */
     public function notifyEvent(string! eventName, <CollectionInterface> model)
     {
-        var behavior, behaviors, modelsBehaviors, eventsManager, status = null, customEventsManager;
-
-        let behaviors = this->_behaviors;
-        if typeof behaviors == "array" {
-            if fetch modelsBehaviors, behaviors[get_class_lower(model)] {
-
-                /**
-                 * Notify all the events on the behavior
-                 */
-                for behavior in modelsBehaviors {
-                    let status = behavior->notify(eventName, model);
-                    if status === false {
-                        return false;
-                    }
-                }
-            }
-        }
+        var eventsManager, status = null, customEventsManager;
 
         /**
          * Dispatch events to the global events manager
@@ -360,79 +558,5 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
 
         return status;
     }
-
-    /**
-     * Dispatch a event to the listeners and behaviors
-     * This method expects that the endpoint listeners/behaviors returns true
-     * meaning that a least one was implemented
-     *
-     * @param \Scene\Mvc\CollectionInterface model
-     * @param string eventName
-     * @param mixed data
-     * @return boolean
-     */
-    public function missingMethod(<CollectionInterface> model, string! eventName, var data) -> boolean
-    {
-        var behaviors, modelsBehaviors, result, eventsManager, behavior;
-
-        /**
-         * Dispatch events to the global events manager
-         */
-        let behaviors = this->_behaviors;
-        if typeof behaviors == "array" {
-
-            if fetch modelsBehaviors, behaviors[get_class_lower(model)] {
-
-                /**
-                 * Notify all the events on the behavior
-                 */
-                for behavior in modelsBehaviors {
-                    let result = behavior->missingMethod(model, eventName, data);
-                    if result !== null {
-                        return result;
-                    }
-                }
-            }
-        }
-
-        /**
-         * Dispatch events to the global events manager
-         */
-        let eventsManager = this->_eventsManager;
-        if typeof eventsManager == "object" {
-            return eventsManager->fire("model:" . eventName, model, data);
-        }
-
-        return false;
-    }
-
-    /**
-     * Binds a behavior to a model
-     *
-     * @param \Scene\Mvc\CollectionInterface model
-     * @param \Scene\Mvc\Collection\BehaviorInterface behavior
-     */
-    public function addBehavior(<CollectionInterface> model, <BehaviorInterface> behavior)
-    {
-        var entityName, modelsBehaviors;
-
-        let entityName = get_class_lower(model);
-
-        /**
-         * Get the current behaviors
-         */
-        if !fetch modelsBehaviors, this->_behaviors[entityName] {
-            let modelsBehaviors = [];
-        }
-
-        /**
-         * Append the behavior to the list of behaviors
-         */
-        let modelsBehaviors[] = behavior;
-
-        /**
-         * Update the behaviors list
-         */
-        let this->_behaviors[entityName] = modelsBehaviors;
-    }
+  
 }
