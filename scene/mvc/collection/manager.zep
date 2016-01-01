@@ -403,7 +403,7 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
             let rp = new ReadPreference(
                 /* We prefer to read from a secondary, but are OK with reading from the
                  * primary if necessary (e.g. secondaries are offline) */
-                ReadPreference::RP_SECONDARY_PREFERRED
+                ReadPreference::RP_PRIMARY
             );
 
             let this->_readPreference = rp;
