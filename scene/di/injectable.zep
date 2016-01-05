@@ -1,4 +1,25 @@
 
+/*
+ +------------------------------------------------------------------------+
+ |                       ___  ___ ___ _ __   ___                          |
+ |                      / __|/ __/ _ \  _ \ / _ \                         |
+ |                      \__ \ (_|  __/ | | |  __/                         |
+ |                      |___/\___\___|_| |_|\___|                         |
+ |                                                                        |
+ +------------------------------------------------------------------------+
+ | Copyright (c) 2015-2016 Scene Team (http://mcorce.com)                 |
+ +------------------------------------------------------------------------+
+ | This source file is subject to the MIT License that is bundled         |
+ | with this package in the file docs/LICENSE.txt.                        |
+ |                                                                        |
+ | If you did not receive a copy of the license and are unable to         |
+ | obtain it through the world-wide-web, please send an email             |
+ | to scene@mcorce.com so we can send you a copy immediately.             |
+ +------------------------------------------------------------------------+
+ | Authors: DangCheng <dangcheng@hotmail.com>                             |
+ +------------------------------------------------------------------------+
+ */
+
 namespace Scene\Di;
 
 use Scene\Di;
@@ -14,31 +35,6 @@ use Scene\Session\BagInterface;
  *
  * This class allows to access services in the services container by just only accessing a public property
  * with the same name of a registered service
- *
- * @property \Scene\Mvc\Dispatcher|\Scene\Mvc\DispatcherInterface $dispatcher;
- * @property \Scene\Mvc\Router|\Scene\Mvc\RouterInterface $router
- * @property \Scene\Mvc\Url|\Scene\Mvc\UrlInterface $url
- * @property \Scene\Http\Request|\Scene\HTTP\RequestInterface $request
- * @property \Scene\Http\Response|\Scene\HTTP\ResponseInterface $response
- * @property \Scene\Http\Response\Cookies|\Scene\Http\Response\CookiesInterface $cookies
- * @property \Scene\Filter|\Scene\FilterInterface $filter
- * @property \Scene\Flash\Direct $flash
- * @property \Scene\Flash\Session $flashSession
- * @property \Scene\Session\Adapter\Files|\Scene\Session\Adapter|\Scene\Session\AdapterInterface $session
- * @property \Scene\Events\Manager $eventsManager
- * @property \Scene\Db\AdapterInterface $db
- * @property \Scene\Security $security
- * @property \Scene\Crypt $crypt
- * @property \Scene\Tag $tag
- * @property \Scene\Escaper|\Scene\EscaperInterface $escaper
- * @property \Scene\Annotations\Adapter\Memory|\Scene\Annotations\Adapter $annotations
- * @property \Scene\Mvc\Model\Manager|\Scene\Mvc\Model\ManagerInterface $modelsManager
- * @property \Scene\Mvc\Model\MetaData\Memory|\Scene\Mvc\Model\MetadataInterface $modelsMetadata
- * @property \Scene\Mvc\Model\Transaction\Manager $transactionManager
- * @property \Scene\Assets\Manager $assets
- * @property \Scene\Di|\Scene\DiInterface $di
- * @property \Scene\Session\Bag $persistent
- * @property \Scene\Mvc\View|\Scene\Mvc\ViewInterface $view
  */
 abstract class Injectable implements InjectionAwareInterface, EventsAwareInterface
 {
