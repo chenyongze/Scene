@@ -250,9 +250,11 @@ class Url implements UrlInterface, InjectionAwareInterface
      * //Generate a URL appending the URI to the base URI
      * echo $url->get('products/edit/1');
      *
+     * //Generate a URL for a predefined route
+     * echo $url->get(array('for' => 'blog-post', 'title' => 'some-cool-stuff', 'year' => '2015'));
      *</code>
      *
-     * @param string|array|null uri
+     * @param string|null uri
      * @param array|object|null args Optional arguments to be appended to the query string
      * @param boolean local
      * @return string
@@ -261,6 +263,10 @@ class Url implements UrlInterface, InjectionAwareInterface
     {
         string strUri;
         var queryString;
+
+        if typeof uri == "array" {
+            throw new Exception("Invalid parameter type.");
+        }
 
         if local == null {
             if typeof uri == "string" && (memstr(uri, "//") || memstr(uri, ":")) {
@@ -276,10 +282,6 @@ class Url implements UrlInterface, InjectionAwareInterface
 
         if typeof baseUri != "string" {
             let baseUri = this->getBaseUri();
-        }
-
-        if typeof uri == "array" {
-            throw new Exception("Invalid parameter type.");
         }
 
         if local {
