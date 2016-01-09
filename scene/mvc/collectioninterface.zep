@@ -167,4 +167,11 @@ interface CollectionInterface
      * @return boolean
      */
     public function delete() -> boolean;
+
+    /**
+     * Returns the instance as an array representation
+     * 
+     * @return array
+     */
+    public function toArray() -> array;
 }
