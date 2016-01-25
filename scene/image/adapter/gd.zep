@@ -146,71 +146,50 @@ class Gd extends Adapter implements AdapterInterface
         }
     }
 
+    /**
+     * Execute a resize.
+     * 
+     * @param  int width
+     * @param  int height
+     */
     protected function _resize(int width, int height)
     {
-        var image, pre_width, pre_height, reduction_width, reduction_height;
-
-        if version_compare(PHP_VERSION, "5.5.0") < 0 {
-
-            let pre_width = this->_width;
-            let pre_height = this->_height;
-
-            if width > (this->_width / 2) && height > (this->_height / 2) {
-                let reduction_width  = round(width  * 1.1);
-                let reduction_height = round(height * 1.1);
-
-                while pre_width / 2 > reduction_width && pre_height / 2 > reduction_height {
-                    let pre_width /= 2;
-                    let pre_height /= 2;
-                }
-
-                let image = this->_create(pre_width, pre_height);
-
-                if imagecopyresized(image, this->_image, 0, 0, 0, 0, pre_width, pre_height, this->_width, this->_height) {
-                    imagedestroy(this->_image);
-                    let this->_image = image;
-                }
-            }
-
-            let image = this->_create(width, height);
-
-            if imagecopyresampled(image, this->_image, 0, 0, 0, 0, width, height, pre_width, pre_height) {
-                imagedestroy(this->_image);
-                let this->_image = image;
-                let this->_width  = imagesx(image);
-                let this->_height = imagesy(image);
-            }
-        } else {
-            let image = imagescale(this->_image, width, height);
-            imagedestroy(this->_image);
-            let this->_image = image;
-            let this->_width  = imagesx(image);
-            let this->_height = imagesy(image);
-        }
+        var image;
+       
+        let image = imagescale(this->_image, width, height);
+        imagedestroy(this->_image);
+        let this->_image = image;
+        let this->_width  = imagesx(image);
+        let this->_height = imagesy(image);
     }
 
+    /**
+     * Crop an image to the given size
+     *
+     * @param int width
+     * @param int height
+     * @param int offsetX
+     * @param int offsetY
+     * @return \Scene\Image\Adapter
+     */
     protected function _crop(int width, int height, int offsetX, int offsetY)
     {
         var image, rect;
-
-        if version_compare(PHP_VERSION, "5.5.0") < 0 {
-            let image = this->_create(width, height);
-            if (imagecopyresampled(image, this->_image, 0, 0, offsetX, offsetY, width, height, width, height)) {
-                imagedestroy(this->_image);
-                let this->_image = image;
-                let this->_width  = imagesx(image);
-                let this->_height = imagesy(image);
-            }
-        } else {
-            let rect = ["x": offsetX, "y": offsetY, "width": width, "height": height];
-            let image = imagecrop(this->_image, rect);
-            imagedestroy(this->_image);
-            let this->_image = image;
-            let this->_width  = imagesx(image);
-            let this->_height = imagesy(image);
-        }
+  
+        let rect = ["x": offsetX, "y": offsetY, "width": width, "height": height];
+        let image = imagecrop(this->_image, rect);
+        imagedestroy(this->_image);
+        let this->_image = image;
+        let this->_width  = imagesx(image);
+        let this->_height = imagesy(image);
     }
 
+    /**
+     * Rotate the image by a given amount
+     *
+     * @param int degress
+     * @return \Scene\Image\Adapter
+     */
     protected function _rotate(int degrees)
     {
         var image, transparent, width, height;
@@ -231,44 +210,27 @@ class Gd extends Adapter implements AdapterInterface
         }
     }
 
+    /**
+     * Flip the image along the horizontal or vertical axis
+     *
+     * @param int direction
+     * @return \Scene\Image\Adapter
+     */
     protected function _flip(int direction)
     {
-        var image, x;
-
-        if version_compare(PHP_VERSION, "5.5.0") < 0 {
-
-            let image = this->_create(this->_width, this->_height);
-
-            if direction == \Scene\Image::HORIZONTAL {
-                let x = 0;
-                while x < this->_width {
-                    let x++;
-                    imagecopy(image, this->_image, x, 0, this->_width - x - 1, 0, 1, this->_height);
-                }
-            } else {
-                let x = 0;
-                while x < this->_height {
-                    let x++;
-                    imagecopy(image, this->_image, 0, x, 0, this->_height - x - 1, this->_width, 1);
-                }
-            }
-
-            imagedestroy(this->_image);
-            let this->_image = image;
-
-            let this->_width  = imagesx(image);
-            let this->_height = imagesy(image);
+        if direction == \Scene\Image::HORIZONTAL {
+            imageflip(this->_image, IMG_FLIP_HORIZONTAL);
         } else {
-
-            if direction == \Scene\Image::HORIZONTAL {
-                imageflip(this->_image, IMG_FLIP_HORIZONTAL);
-            } else {
-                imageflip(this->_image, IMG_FLIP_VERTICAL);
-            }
-
+            imageflip(this->_image, IMG_FLIP_VERTICAL);
         }
     }
 
+    /**
+     * Sharpen the image by a given amount
+     *
+     * @param int amount
+     * @return \Scene\Image\Adapter
+     */
     protected function _sharpen(int amount)
     {
         var matrix;
@@ -287,6 +249,14 @@ class Gd extends Adapter implements AdapterInterface
         }
     }
 
+    /**
+     * Add a reflection to an image
+     *
+     * @param int height
+     * @param int opacity
+     * @param boolean fadeIn
+     * @return \Scene\Image\Adapter
+     */
     protected function _reflection(int height, int opacity, boolean fadeIn)
     {
         var reflection, line;
@@ -330,6 +300,15 @@ class Gd extends Adapter implements AdapterInterface
         let this->_height = imagesy(reflection);
     }
 
+    /**
+     * Add a watermark to an image with the specified opacity
+     *
+     * @param \Scene\Image\Adapter watermark
+     * @param int offsetX
+     * @param int offsetY
+     * @param int opacity
+     * @return \Scene\Image\Adapter
+     */
     protected function _watermark(<Adapter> watermark, int offsetX, int offsetY, int opacity)
     {
         var overlay, color;
@@ -358,6 +337,20 @@ class Gd extends Adapter implements AdapterInterface
         }
     }
 
+    /**
+     * Add a text to an image with a specified opacity
+     *
+     * @param string text
+     * @param maxed offetX
+     * @param maxed offsetY
+     * @param int opacity
+     * @param int r
+     * @param int g
+     * @param int b
+     * @param int size
+     * @param string fontfile
+     * @return \Scene\Image\Adapter
+     */
     protected function _text(string text, int offsetX, int offsetY, int opacity, int r, int g, int b, int size, string fontfile)
     {
         var space, color, angle;
@@ -412,6 +405,12 @@ class Gd extends Adapter implements AdapterInterface
         }
     }
 
+    /**
+     * Composite one image onto another
+     *
+     * @param \Scene\Image\Adapter watermark
+     * @return \Scene\Image\Adapter
+     */
     protected function _mask(<Adapter> mask)
     {
         var maskImage, newimage, tempImage, color, index, r, g, b;

@@ -125,6 +125,9 @@ class Imagick extends Adapter implements AdapterInterface
 
     /**
      * Execute a resize.
+     * 
+     * @param  int width
+     * @param  int height
      */
     protected function _resize(int width, int height)
     {
@@ -144,10 +147,10 @@ class Imagick extends Adapter implements AdapterInterface
     /**
      * This method scales the images using liquid rescaling method. Only support Imagick
      *
-     * @param int $width   new width
-     * @param int $height  new height
-     * @param int $deltaX How much the seam can traverse on x-axis. Passing 0 causes the seams to be straight.
-     * @param int $rigidity Introduces a bias for non-straight seams. This parameter is typically 0.
+     * @param int width   new width
+     * @param int height  new height
+     * @param int deltaX How much the seam can traverse on x-axis. Passing 0 causes the seams to be straight.
+     * @param int rigidity Introduces a bias for non-straight seams. This parameter is typically 0.
      */
     protected function _liquidRescale(int width, int height, int deltaX, int rigidity)
     {
@@ -170,7 +173,13 @@ class Imagick extends Adapter implements AdapterInterface
     }
 
     /**
-     * Execute a crop.
+     * Crop an image to the given size
+     *
+     * @param int width
+     * @param int height
+     * @param int offsetX
+     * @param int offsetY
+     * @return \Scene\Image\Adapter
      */
     protected function _crop(int width, int height, int offsetX, int offsetY)
     {
@@ -195,7 +204,10 @@ class Imagick extends Adapter implements AdapterInterface
     }
 
     /**
-     * Execute a rotation.
+     * Rotate the image by a given amount
+     *
+     * @param int degress
+     * @return \Scene\Image\Adapter
      */
     protected function _rotate(int degrees)
     {
@@ -218,7 +230,10 @@ class Imagick extends Adapter implements AdapterInterface
     }
 
     /**
-     * Execute a flip.
+     * Flip the image along the horizontal or vertical axis
+     *
+     * @param int direction
+     * @return \Scene\Image\Adapter
      */
     protected function _flip(int direction)
     {
@@ -240,7 +255,10 @@ class Imagick extends Adapter implements AdapterInterface
     }
 
     /**
-     * Execute a sharpen.
+     * Sharpen the image by a given amount
+     *
+     * @param int amount
+     * @return \Scene\Image\Adapter
      */
     protected function _sharpen(int amount)
     {
@@ -258,17 +276,18 @@ class Imagick extends Adapter implements AdapterInterface
     }
 
     /**
-     * Execute a reflection.
+     * Add a reflection to an image
+     *
+     * @param int height
+     * @param int opacity
+     * @param boolean fadeIn
+     * @return \Scene\Image\Adapter
      */
     protected function _reflection(int height, int opacity, boolean fadeIn)
     {
         var reflection, fade, pseudo, image, pixel, ret;
 
-        if self::_version >= 30100 {
-            let reflection = clone this->_image;
-        } else {
-            let reflection = clone this->_image->$clone();
-        }
+        let reflection = clone this->_image;
 
         reflection->setIteratorIndex(0);
 
@@ -352,7 +371,13 @@ class Imagick extends Adapter implements AdapterInterface
     }
 
     /**
-     * Execute a watermarking.
+     * Add a watermark to an image with the specified opacity
+     *
+     * @param \Scene\Image\Adapter image
+     * @param int offsetX
+     * @param int offsetY
+     * @param int opacity
+     * @return \Scene\Image\Adapter
      */
     protected function _watermark(<Adapter> image, int offsetX, int offsetY, int opacity)
     {
@@ -383,7 +408,18 @@ class Imagick extends Adapter implements AdapterInterface
     }
 
     /**
-     * Execute a text
+     * Add a text to an image with a specified opacity
+     *
+     * @param string text
+     * @param maxed offetX
+     * @param maxed offsetY
+     * @param int opacity
+     * @param int r
+     * @param int g
+     * @param int b
+     * @param int size
+     * @param string fontfile
+     * @return \Scene\Image\Adapter
      */
     protected function _text(string text, var offsetX, var offsetY, int opacity, int r, int g, int b, int size, string fontfile)
     {
@@ -411,8 +447,6 @@ class Imagick extends Adapter implements AdapterInterface
 
         if typeof offsetX == "bool" {
             if typeof offsetY == "bool" {
-                let offsetX = 0,
-                    offsetY = 0;
                 if offsetX && offsetY {
                     let gravity = constant("Imagick::GRAVITY_SOUTHEAST");
                 } else {
@@ -475,7 +509,7 @@ class Imagick extends Adapter implements AdapterInterface
                             }
                         }
                     } else {
-                        if typeof offsetY == "long" {
+                        if typeof offsetY == "int" {
                             let x = (int) offsetX,
                                 y = (int) offsetY;
 
@@ -490,12 +524,10 @@ class Imagick extends Adapter implements AdapterInterface
                                 }
                             } else {
                                 if y < 0 {
-                                    let offsetX = 0,
-                                        offsetY = y * -1,
+                                    let offsetY = y * -1,
                                         gravity = constant("Imagick::GRAVITY_SOUTHWEST");
                                 } else {
-                                    let offsetX = 0,
-                                        gravity = constant("Imagick::GRAVITY_NORTHWEST");
+                                    let gravity = constant("Imagick::GRAVITY_NORTHWEST");
                                 }
                             }
                         }
@@ -521,7 +553,8 @@ class Imagick extends Adapter implements AdapterInterface
     /**
      * Composite one image onto another
      *
-     * @param Adapter $mask mask Image instance
+     * @param \Scene\Image\Adapter watermark
+     * @return \Scene\Image\Adapter
      */
     protected function _mask(<Adapter> image)
     {
