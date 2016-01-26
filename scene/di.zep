@@ -256,41 +256,46 @@ class Di implements DiInterface
      */
     public function get(string! name, parameters = null)
     {
-        var service, instance, reflection;
-        
-        var eventsManager;
+        var service, eventsManager, instance = null, reflection;
+
         let eventsManager = <ManagerInterface> this->_eventsManager;
 
         if typeof eventsManager == "object" {
-            eventsManager->fire("di:beforeServiceResolve", this, ["name": name, "parameters": parameters]);
+            let instance = eventsManager->fire(
+                "di:beforeServiceResolve",
+                this,
+                ["name": name, "parameters": parameters]
+            );
         }
 
-        if fetch service, this->_services[name] {
-            /**
-             * The service is registered in the DI
-             */
-            let instance = service->resolve(parameters, this);
-        } else {
-            /**
-             * The DI also acts as builder for any class even if it isn't defined in the DI
-             */
-            if !class_exists(name) {
-                throw new Exception("Service '" . name . "' wasn't found in the dependency injection container");
-            }
+        if typeof instance != "object" {
+            if fetch service, this->_services[name] {
+                /**
+                 * The service is registered in the DI
+                 */
+                let instance = service->resolve(parameters, this);
+            } else {
+                /**
+                 * The DI also acts as builder for any class even if it isn't defined in the DI
+                 */
+                if !class_exists(name) {
+                    throw new Exception("Service '" . name . "' wasn't found in the dependency injection container");
+                }
 
-            if typeof parameters == "array" {
-                if count(parameters) {
-                    let reflection = new \ReflectionClass(name),
-                        instance = reflection->newInstanceArgs(parameters);
-                    
-                } else {
+                if typeof parameters == "array" {
+                    if count(parameters) {
+                        let reflection = new \ReflectionClass(name),
+                            instance = reflection->newInstanceArgs(parameters);
+                        
+                    } else {
+                        let reflection = new \ReflectionClass(name),
+                            instance = reflection->newInstance();
+                    }
+                } else {                
                     let reflection = new \ReflectionClass(name),
                         instance = reflection->newInstance();
+                    
                 }
-            } else {                
-                let reflection = new \ReflectionClass(name),
-                    instance = reflection->newInstance();
-                
             }
         }
 
