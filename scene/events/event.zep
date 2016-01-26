@@ -30,7 +30,7 @@ use Scene\Events\Exception;
  * This class offers contextual information of a fired event in the EventsManager
  *
  */
-class Event
+class Event implements EventInterface
 {
 
     /**
@@ -39,7 +39,7 @@ class Event
      * @var string|null
      * @access protected
     */
-    protected _type { set, get };
+    protected _type { get };
 
      /**
      * Source
@@ -55,7 +55,7 @@ class Event
      * @var mixed
      * @access protected
     */
-    protected _data { set, get };
+    protected _data { get };
 
     /**
      * Stopped
@@ -71,7 +71,7 @@ class Event
      * @var boolean
      * @access protected
     */
-    protected _cancelable = true { get };
+    protected _cancelable = true;
 
     /**
      * Phalcon\Events\Event constructor
@@ -96,22 +96,66 @@ class Event
     }
 
     /**
-     * Stops the event preventing propagation
+     * Set the event's type
+     *
+     * @param string eventType
+     * @return \Scene\Events\EventInterface
      */
-    public function stop() -> void
+    public function setType(string! type) -> <EventInterface>
+    {
+        let this->_type = type;
+
+        return this;
+    }
+
+    /**
+     * Set the event's data
+     *
+     * @param mixed data
+     * @return \Scene\Events\EventInterface
+     */
+    public function setData(data = null) -> <EventInterface>
+    {
+        let this->_data = data;
+
+        return this;
+    }
+
+
+    /**
+     * Stops the event preventing propagation
+     *
+     * @return \Scene\Events\EventInterface
+     * @throws Exception
+     */
+    public function stop() -> <EventInterface>
     {
         if !this->_cancelable {
             throw new Exception("Trying to cancel a non-cancelable event");
         }
 
         let this->_stopped = true;
+
+        return this;
     }
 
     /**
      * Check whether the event is currently stopped
+     *
+     * @return boolean
      */
     public function isStopped() -> boolean
     {
         return this->_stopped;
+    }
+
+    /**
+     * Check whether the event is cancelable
+     *
+     * @return boolean
+     */
+    public function isCancelable() -> boolean
+    {
+        return this->_cancelable;
     }
 }

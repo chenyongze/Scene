@@ -88,7 +88,7 @@ class Headers implements HeadersInterface
         var headers;
 
         let headers = this->_headers;
-        unset(headers[header]);
+        unset headers[header];
         let this->_headers = headers;
     }
 
@@ -102,10 +102,14 @@ class Headers implements HeadersInterface
         var header, value;
         if !headers_sent() {
             for header, value in this->_headers {
-                if !empty value {
+                if value !== null {                 
                     header(header . ": " . value, true);
                 } else {
-                    header(header, true);
+                    if memstr(header, ":") {
+                        header(header, true);
+                    } else {
+                        header(header . ": ", true);
+                    }
                 }
             }
             return true;

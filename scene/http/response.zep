@@ -589,10 +589,10 @@ class Response implements ResponseInterface, InjectionAwareInterface
      *</code>
      *
      * @param mixed content
-     * @param int|null jsonOptions
+     * @param int jsonOptions
      * @return \Scene\Http\ResponseInterface
      */
-    public function setJsonContent(var content, jsonOptions = 0, depth = 512) -> <ResponseInterface>
+    public function setJsonContent(var content, int jsonOptions = 0, int depth = 512) -> <ResponseInterface>
     {
         this->setContentType("application/json", "UTF-8");
         this->setContent(json_encode(content, jsonOptions, depth));

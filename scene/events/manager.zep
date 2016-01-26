@@ -216,21 +216,13 @@ class Manager implements ManagerInterface
     }
 
     /**
-     * Alias of detachAll
-     */
-    public function dettachAll(string! type = null)
-    {
-        this->detachAll(type);
-    }
-
-    /**
      * Internal handler to call a queue of events
      *
      * @param \SplPriorityQueue|array queue
-     * @param \Scene\Events\Event event
+     * @param \Scene\Events\EventInterface event
      * @return mixed
      */
-    public final function fireQueue(var queue, <Event> event)
+    public final function fireQueue(var queue, <EventInterface> event)
     {
         var status, arguments, eventName, data, iterator, source, handler;
         boolean collect, cancelable;
@@ -260,7 +252,7 @@ class Manager implements ManagerInterface
         let data = event->getData();
 
         // Tell if the event is cancelable
-        let cancelable = (boolean) event->getCancelable();
+        let cancelable = (boolean) event->isCancelable();
 
         // Responses need to be traced?
         let collect = (boolean) this->_collect;
