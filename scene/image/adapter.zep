@@ -461,16 +461,10 @@ abstract class Adapter
      * @param int quality
      * @return \Scene\Image\Adapter
      */
-    public function save(string file = null, int quality = 100) -> <Adapter>
+    public function save(string file = null, int quality = -1) -> <Adapter>
     {
         if !file {
             let file = (string) this->_realpath;
-        }
-
-        if quality < 1 {
-            let quality = 1;
-        } elseif quality > 100 {
-            let quality = 100;
         }
 
         this->{"_save"}(file, quality);

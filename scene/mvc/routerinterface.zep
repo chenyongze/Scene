@@ -194,11 +194,11 @@ interface RouterInterface
      *
      * @return \Scene\Mvc\Router\RouteInterface
      */
-    public function getMatchedRoute() -> <RouteInterface>;
+    public function getMatchedRoute();
 
     /**
      * Return the sub expressions in the regular expression matched
-     *
+     * 
      * @return array
      */
     public function getMatches() -> array;

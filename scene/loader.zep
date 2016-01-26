@@ -75,14 +75,6 @@ class Loader implements EventsAwareInterface
     protected _checkedPath = null;
 
     /**
-     * Prefixes
-     *
-     * @var array|null
-     * @access protected
-    */
-    protected _prefixes = null;
-
-    /**
      * Classes
      *
      * @var array|null
@@ -184,21 +176,54 @@ class Loader implements EventsAwareInterface
      */
     public function registerNamespaces(array! namespaces, boolean merge = false) -> <Loader>
     {
-        var currentNamespaces, mergedNamespaces;
+        var currentNamespaces, preparedNamespaces, name, paths;
+
+        let preparedNamespaces = this->prepareNamespace(namespaces);
 
         if merge {
             let currentNamespaces = this->_namespaces;
             if typeof currentNamespaces == "array" {
-                let mergedNamespaces = array_merge(currentNamespaces, namespaces);
+                for name, paths in preparedNamespaces {
+                    if !isset currentNamespaces[name] {
+                        let currentNamespaces[name] = [];
+                    }
+
+                    let currentNamespaces[name] = array_merge(currentNamespaces[name], paths);
+                }
+
+                let this->_namespaces = currentNamespaces;
             } else {
-                let mergedNamespaces = namespaces;
+                let this->_namespaces = preparedNamespaces;
             }
-            let this->_namespaces = mergedNamespaces;
         } else {
-            let this->_namespaces = namespaces;
+            let this->_namespaces = preparedNamespaces;
         }
 
         return this;
+    }
+
+    /**
+     * Prepare Namespace
+     * 
+     * @param  array namespaces
+     * @return array
+     */
+    protected function prepareNamespace(array! namespaces) -> array
+    {
+        var localPaths, name, paths, prepared;
+
+        let prepared = [];
+        for name, paths in namespaces {
+            if typeof paths != "array" {
+                let localPaths = [paths];
+            } else {
+                let localPaths = paths;
+            }
+
+            let prepared[name] = localPaths;
+        }
+
+        return prepared;
     }
 
     /**
@@ -209,42 +234,6 @@ class Loader implements EventsAwareInterface
     public function getNamespaces() -> array
     {
         return this->_namespaces;
-    }
-
-    /**
-     * Register directories on which "not found" classes could be found
-     *
-     * @param array prefixes
-     * @param boolean|null merge
-     * @return \Scene\Loader
-     * @throws \Scene\Loader\Exception
-     */
-    public function registerPrefixes(array! prefixes, boolean merge = false) -> <Loader>
-    {
-        var currentPrefixes, mergedPrefixes;
-
-        if merge {
-            let currentPrefixes = this->_prefixes;
-            if typeof currentPrefixes == "array" {
-                let mergedPrefixes = array_merge(currentPrefixes, prefixes);
-            } else {
-                let mergedPrefixes = prefixes;
-            }
-            let this->_prefixes = mergedPrefixes;
-        } else {
-            let this->_prefixes = prefixes;
-        }
-        return this;
-    }
-
-    /**
-     * Return current prefixes registered in the autoloader
-     *
-     * @param array|null
-     */
-    public function getPrefixes() -> array
-    {
-        return this->_prefixes;
     }
 
     /**
@@ -356,8 +345,8 @@ class Loader implements EventsAwareInterface
     public function autoLoad(string! className) -> boolean
     {
         var eventsManager, classes, extensions, filePath, ds, fixedDirectory,
-            prefixes, directories, namespaceSeparator, namespaces, nsPrefix,
-            directory, fileName, extension, prefix, dsClassName, nsClassName;
+            directories, ns, namespaces, nsPrefix,
+            directory, fileName, extension, nsClassName;
 
         let eventsManager = this->_eventsManager;
         if typeof eventsManager == "object" {
@@ -382,7 +371,7 @@ class Loader implements EventsAwareInterface
         let extensions = this->_extensions;
 
         let ds = DIRECTORY_SEPARATOR,
-            namespaceSeparator = "\\";
+            ns = "\\";
 
         /**
          * Checking in namespaces
@@ -390,7 +379,7 @@ class Loader implements EventsAwareInterface
         let namespaces = this->_namespaces;
         if typeof namespaces == "array" {
 
-            for nsPrefix, directory in namespaces {
+            for nsPrefix, directories in namespaces {
 
                 /**
                  * The class name must start with the current namespace
@@ -400,47 +389,49 @@ class Loader implements EventsAwareInterface
                     /**
                      * Append the namespace separator to the prefix
                      */
-                    let fileName = substr(className, strlen(nsPrefix . namespaceSeparator));
-                    let fileName = str_replace(namespaceSeparator, ds, fileName);
+                    let fileName = substr(className, strlen(nsPrefix . ns));
+                    let fileName = str_replace(ns, ds, fileName);
 
                     if fileName {
 
-                        /**
-                         * Add a trailing directory separator if the user forgot to do that
-                         */
-                        let fixedDirectory = rtrim(directory, ds) . ds;
-
-                        for extension in extensions {
-
-                            let filePath = fixedDirectory . fileName . "." . extension;
-
+                        for directory in directories {
                             /**
-                             * Check if a events manager is available
+                             * Add a trailing directory separator if the user forgot to do that
                              */
-                            if typeof eventsManager == "object" {
-                                let this->_checkedPath = filePath;
-                                eventsManager->fire("loader:beforeCheckPath", this);
-                            }
+                            let fixedDirectory = rtrim(directory, ds) . ds;
 
-                            /**
-                             * This is probably a good path, let's check if the file exists
-                             */
-                            if is_file(filePath) {
+                            for extension in extensions {
 
+                                let filePath = fixedDirectory . fileName . "." . extension;
+
+                                /**
+                                 * Check if a events manager is available
+                                 */
                                 if typeof eventsManager == "object" {
-                                    let this->_foundPath = filePath;
-                                    eventsManager->fire("loader:pathFound", this, filePath);
+                                    let this->_checkedPath = filePath;
+                                    eventsManager->fire("loader:beforeCheckPath", this);
                                 }
 
                                 /**
-                                 * Simulate a require
+                                 * This is probably a good path, let's check if the file exists
                                  */
-                                require filePath;
+                                if is_file(filePath) {
 
-                                /**
-                                 * Return true mean success
-                                 */
-                                return true;
+                                    if typeof eventsManager == "object" {
+                                        let this->_foundPath = filePath;
+                                        eventsManager->fire("loader:pathFound", this, filePath);
+                                    }
+
+                                    /**
+                                     * Simulate a require
+                                     */
+                                    require filePath;
+
+                                    /**
+                                     * Return true mean success
+                                     */
+                                    return true;
+                                }
                             }
                         }
                     }
@@ -449,69 +440,9 @@ class Loader implements EventsAwareInterface
         }
 
         /**
-         * Checking in prefixes
+         * Change the namespace separator by directory separator too
          */
-        let prefixes = this->_prefixes;
-        if typeof prefixes == "array" {
-
-            for prefix, directory in prefixes {
-
-                /**
-                 * The class name starts with the prefix?
-                 */
-                if starts_with(className, prefix) {
-
-                    /**
-                     * Get the possible file path
-                     */
-                    let fileName = str_replace(prefix . namespaceSeparator, "", className);
-                    let fileName = str_replace(prefix . "_", "", fileName);
-                    let fileName = str_replace("_", ds, fileName);
-
-                    if fileName {
-
-                        /**
-                         * Add a trailing directory separator if the user forgot to do that
-                         */
-                        let fixedDirectory = rtrim(directory, ds) . ds;
-
-                        for extension in extensions {
-
-                            let filePath = fixedDirectory . fileName . "." . extension;
-
-                            if typeof eventsManager == "object" {
-                                let this->_checkedPath = filePath;
-                                eventsManager->fire("loader:beforeCheckPath", this, filePath);
-                            }
-
-                            if is_file(filePath) {
-
-                                /**
-                                 * Call 'pathFound' event
-                                 */
-                                if typeof eventsManager == "object" {
-                                    let this->_foundPath = filePath;
-                                    eventsManager->fire("loader:pathFound", this, filePath);
-                                }
-
-                                require filePath;
-                                return true;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        /**
-         * Change the pseudo-separator by the directory separator in the class name
-         */
-        let dsClassName = str_replace("_", ds, className);
-
-        /**
-         * And change the namespace separator by directory separator too
-         */
-        let nsClassName = str_replace("\\", ds, dsClassName);
+        let nsClassName = str_replace("\\", ds, className);
 
         /**
          * Checking in directories

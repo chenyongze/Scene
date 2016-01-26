@@ -540,13 +540,40 @@ class Gd extends Adapter implements AdapterInterface
         if strcmp(ext, "jpg") == 0 || strcmp(ext, "jpeg") == 0 {
             let this->_type = 2;
             let this->_mime = image_type_to_mime_type(this->_type);
-            imagejpeg(this->_image, file, quality);
+            
+            if quality >= 0 {
+                if quality < 1 {
+                    let quality = 1;
+                } elseif quality > 100 {
+                    let quality = 100;
+                }
+                imagejpeg(this->_image, file, quality);
+            } else {
+                imagejpeg(this->_image, file);
+            }
+
             return true;
         }
         if strcmp(ext, "png") == 0 {
             let this->_type = 3;
             let this->_mime = image_type_to_mime_type(this->_type);
-            imagepng(this->_image, file);
+
+            if quality >= 0 {
+                if quality < 1 {
+                    let quality = 1;
+                } elseif quality > 100 {
+                    let quality = 100;
+                }
+                let quality /= 10;
+                let quality = ceil(quality);
+                if quality >= 9 {
+                    let quality = 9;
+                }
+                imagepng(this->_image, file, quality);
+            } else {
+                imagepng(this->_image, file);
+            }
+
             return true;
         }
 
