@@ -29,6 +29,7 @@ use Scene\Http\ResponseInterface;
 use Scene\Mvc\ViewInterface;
 use Scene\Mvc\ModuleDefinitionInterface;
 use Scene\Mvc\RouterInterface;
+use Scene\Mvc\Router\RouteInterface;
 use Scene\Events\ManagerInterface;
 use Scene\Mvc\Application\Exception;
 
@@ -253,7 +254,7 @@ class Application extends Injectable
          * If a 'match' callback was defined in the matched route
          * The whole dispatcher+view behavior can be overriden by the developer
          */
-        let matchedRoute = router->getMatchedRoute();
+        let matchedRoute = <RouteInterface> router->getMatchedRoute();
         if typeof matchedRoute == "object" {
             let match = matchedRoute->getMatch();
             if match !== null {

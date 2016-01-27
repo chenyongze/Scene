@@ -699,7 +699,7 @@ class Micro extends Injectable implements \ArrayAccess
             /**
              * Check if one route was matched
              */
-            let matchedRoute = router->getMatchedRoute();
+            let matchedRoute = <RouteInterface> router->getMatchedRoute();
             if typeof matchedRoute == "object" {
 
                 if !fetch handler, this->_handlers[matchedRoute->getRouteId()] {
