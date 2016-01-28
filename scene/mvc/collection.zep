@@ -1362,4 +1362,15 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
     {
         let this->_skipped = skip;
     }
+
+    /**
+     * Returns NULL if the property is not set.
+     * 
+     * @param  mixed param
+     * @return null
+     */
+    public function __get(var param)
+    {
+        return null;
+    }
 }

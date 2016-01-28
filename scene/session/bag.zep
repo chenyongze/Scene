@@ -185,7 +185,7 @@ class Bag implements InjectionAwareInterface, BagInterface, \IteratorAggregate, 
      * echo $user->get('name', 'Kimbra');
      *</code>
      */
-    public function get(string! property, var defaultValue = null)
+    public function get(string! property, var defaultValue = null) -> var
     {
         var value;
 
@@ -213,7 +213,7 @@ class Bag implements InjectionAwareInterface, BagInterface, \IteratorAggregate, 
      * echo $user->name;
      *</code>
      */
-    public function __get(string! property)
+    public function __get(string! property) -> var
     {
         return this->get(property);
     }
@@ -302,7 +302,7 @@ class Bag implements InjectionAwareInterface, BagInterface, \IteratorAggregate, 
      *
      * @return \ArrayIterator
      */
-    public final function getIterator()
+    public final function getIterator() -> <\ArrayIterator>
     {
         if this->_initialized === false {
             this->initialize();
@@ -323,7 +323,7 @@ class Bag implements InjectionAwareInterface, BagInterface, \IteratorAggregate, 
     /**
      * @param string property
      */
-    public final function offsetExists(string! property)
+    public final function offsetExists(string! property) -> boolean
     {
         return this->has(property);
     }
@@ -339,7 +339,7 @@ class Bag implements InjectionAwareInterface, BagInterface, \IteratorAggregate, 
     /**
      * @param string property
      */
-    public final function offsetGet(string! property)
+    public final function offsetGet(string! property) -> var
     {
         return this->get(property);
     }

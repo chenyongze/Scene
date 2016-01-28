@@ -31,9 +31,7 @@ use Scene\Session\Adapter;
  * This adapter store sessions in plain files
  *
  *<code>
- * $session = new \Scene\Session\Adapter\Files(array(
- *    'uniqueId' => 'my-private-app'
- * ));
+ * $session = new \Scene\Session\Adapter\Files(['uniqueId' => 'my-private-app']);
  *
  * $session->start();
  *

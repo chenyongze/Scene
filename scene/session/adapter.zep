@@ -93,9 +93,7 @@ abstract class Adapter
      * Sets session's options
      *
      *<code>
-     *  $session->setOptions(array(
-     *      'uniqueId' => 'my-private-app'
-     *  ));
+     *  $session->setOptions(['uniqueId' => 'my-private-app']);
      *</code>
      *
      * @param array options
@@ -329,12 +327,11 @@ abstract class Adapter
     }
 
     /**
-     * Returns the status of the current session. For PHP 5.3 this function will always return SESSION_NONE
+     * Returns the status of the current session.
      *
      *<code>
      *  var_dump($session->status());
      *
-     *  // PHP 5.4 and above will give meaningful messages, 5.3 gets SESSION_NONE always
      *  if ($session->status() !== $session::SESSION_ACTIVE) {
      *      $session->start();
      *  }
@@ -354,17 +351,15 @@ abstract class Adapter
 
             case PHP_SESSION_ACTIVE:
                 return self::SESSION_ACTIVE;
-            
-            case PHP_SESSION_NONE:
-                return self::SESSION_NONE;
-
         }
+
+        return self::SESSION_NONE;
     }
 
     /**
      * Alias: Gets a session variable from an application context
      */
-    public function __get(string index)
+    public function __get(string index) -> var
     {
         return this->get(index);
     }

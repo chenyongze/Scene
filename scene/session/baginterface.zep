@@ -46,7 +46,7 @@ interface BagInterface
      * @param string property
      * @param string value
      */
-    public function set(string! property, value);
+    public function set(string! property, var value);
 
     /**
      * Getter of values
@@ -55,7 +55,7 @@ interface BagInterface
      * @param mixed defaultValue
      * @return mixed
      */
-    public function get(string! property, defaultValue = null);
+    public function get(string! property, defaultValue = null) -> var;
 
     /**
      * Isset property
@@ -71,7 +71,7 @@ interface BagInterface
      * @param string property
      * @param string value
      */
-    public function __set(string! property, value);
+    public function __set(string! property, var value);
 
     /**
      * Getter of values
@@ -79,7 +79,7 @@ interface BagInterface
      * @param string property
      * @return mixed
      */
-    public function __get(string! property);
+    public function __get(string! property) -> var;
 
     /**
      * Isset property
