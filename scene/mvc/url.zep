@@ -145,7 +145,6 @@ class Url implements UrlInterface, InjectionAwareInterface
         if baseUri === null {
 
             if fetch phpSelf, _SERVER["PHP_SELF"] {
-                //let uri = Scene_get_uri(phpSelf);
                 let uri = self::getUri(phpSelf);
             } else {
                 let uri = null;

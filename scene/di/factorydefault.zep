@@ -43,8 +43,6 @@ class FactoryDefault extends \Scene\Di
             "router":             new Service("router", "Scene\\Mvc\\Router", true),
             "dispatcher":         new Service("dispatcher", "Scene\\Mvc\\Dispatcher", true),
             "url":                new Service("url", "Scene\\Mvc\\Url", true),
-            //"modelsManager":      new Service("modelsManager", "Scene\\Mvc\\Model\\Manager", true),
-            //"modelsMetadata":     new Service("modelsMetadata", "Scene\\Mvc\\Model\\MetaData\\Memory", true),
             "response":           new Service("response", "Scene\\Http\\Response", true),
             "cookies":            new Service("cookies", "Scene\\Http\\Response\\Cookies", true),
             "request":            new Service("request", "Scene\\Http\\Request", true),
@@ -52,14 +50,12 @@ class FactoryDefault extends \Scene\Di
             "escaper":            new Service("escaper", "Scene\\Escaper", true),
             "security":           new Service("security", "Scene\\Security", true),
             "crypt":              new Service("crypt", "Scene\\Crypt", true),
-            //"annotations":        new Service("annotations", "Scene\\Annotations\\Adapter\\Memory", true),
             //"flash":              new Service("flash", "Scene\\Flash\\Direct", true),
             //"flashSession":       new Service("flashSession", "Scene\\Flash\\Session", true),
             "tag":                new Service("tag", "Scene\\Tag", true),
             "session":            new Service("session", "Scene\\Session\\Adapter\\Files", true),
             "sessionBag":         new Service("sessionBag", "Scene\\Session\\Bag"),
             "eventsManager":      new Service("eventsManager", "Scene\\Events\\Manager", true)
-            //"transactionManager": new Service("transactionManager", "Scene\\Mvc\\Model\\Transaction\\Manager", true),
             //"assets":             new Service("assets", "Scene\\Assets\\Manager", true)
         ];
     }

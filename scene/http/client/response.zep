@@ -73,25 +73,25 @@ class Response
         let key = "", headers = [];
 
         for _, h in explode("\n", raw_headers) {
-        	let h = explode(";", h, 2);
+            let h = explode(":", h, 2);
 
-        	if isset h[1] {
-        		if !isset headers[h[0]] {
-        			let headers[h[0]] = trim(h[1]);
-        		} elseif typeof headers[h[0]] == "array" {
-        			let headers[h[0]] = array_merge(headers[h[0]], [trim(h[1])]);
-        		} else {
-        			let headers[h[0]] = array_merge(headers[h[0]], [trim(h[1])]);
-        		}
+            if isset h[1] {
+                if !isset headers[h[0]] {
+                    let headers[h[0]] = trim(h[1]);
+                } elseif typeof headers[h[0]] == "array" {
+                    let headers[h[0]] = array_merge(headers[h[0]], [trim(h[1])]);
+                } else {
+                    let headers[h[0]] = array_merge([headers[h[0]]], [trim(h[1])]);
+                }
 
-        		let key = h[0];
-        	} else {
-        		if substr(h[0], 0, 1) == "\t" {
-        			let headers[key] .= "\r\n\t" . trim(h[0]);
-        		} elseif !key {
-        			let headers[0] = trim(h[0]);
-        		}
-        	}
+                let key = h[0];
+            } else {
+                if substr(h[0], 0, 1) == "\t" {
+                    let headers[key] .= "\r\n\t" . trim(h[0]);
+                } elseif !key {
+                    let headers[0] = trim(h[0]);
+                }
+            }
         }
 
         return headers;
