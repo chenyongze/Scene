@@ -184,7 +184,6 @@ class Imagick extends Adapter implements AdapterInterface
      * @param int height
      * @param int offsetX
      * @param int offsetY
-     * @return \Scene\Image\Adapter
      */
     protected function _crop(int width, int height, int offsetX, int offsetY)
     {
@@ -211,7 +210,6 @@ class Imagick extends Adapter implements AdapterInterface
      * Rotate the image by a given amount
      *
      * @param int degress
-     * @return \Scene\Image\Adapter
      */
     protected function _rotate(int degrees)
     {
@@ -237,7 +235,6 @@ class Imagick extends Adapter implements AdapterInterface
      * Flip the image along the horizontal or vertical axis
      *
      * @param int direction
-     * @return \Scene\Image\Adapter
      */
     protected function _flip(int direction)
     {
@@ -262,7 +259,6 @@ class Imagick extends Adapter implements AdapterInterface
      * Sharpen the image by a given amount
      *
      * @param int amount
-     * @return \Scene\Image\Adapter
      */
     protected function _sharpen(int amount)
     {
@@ -285,7 +281,6 @@ class Imagick extends Adapter implements AdapterInterface
      * @param int height
      * @param int opacity
      * @param boolean fadeIn
-     * @return \Scene\Image\Adapter
      */
     protected function _reflection(int height, int opacity, boolean fadeIn)
     {
@@ -381,7 +376,6 @@ class Imagick extends Adapter implements AdapterInterface
      * @param int offsetX
      * @param int offsetY
      * @param int opacity
-     * @return \Scene\Image\Adapter
      */
     protected function _watermark(<Adapter> image, int offsetX, int offsetY, int opacity)
     {
@@ -423,7 +417,6 @@ class Imagick extends Adapter implements AdapterInterface
      * @param int b
      * @param int size
      * @param string fontfile
-     * @return \Scene\Image\Adapter
      */
     protected function _text(string text, var offsetX, var offsetY, int opacity, int r, int g, int b, int size, string fontfile)
     {
@@ -558,7 +551,6 @@ class Imagick extends Adapter implements AdapterInterface
      * Composite one image onto another
      *
      * @param \Scene\Image\Adapter watermark
-     * @return \Scene\Image\Adapter
      */
     protected function _mask(<Adapter> image)
     {
@@ -587,7 +579,12 @@ class Imagick extends Adapter implements AdapterInterface
     }
 
     /**
-     * Execute a background.
+     * Set the background color of an image
+     *
+     * @param int r
+     * @param int g
+     * @param int a
+     * @param int opacity
      */
     protected function _background(int r, int g, int b, int opacity)
     {
@@ -630,7 +627,7 @@ class Imagick extends Adapter implements AdapterInterface
     /**
      * Blur image
      *
-     * @param int $radius Blur radius
+     * @param int radius Blur radius
      */
     protected function _blur(int radius)
     {
@@ -647,7 +644,7 @@ class Imagick extends Adapter implements AdapterInterface
     /**
      * Pixelate image
      *
-     * @param int $amount amount to pixelate
+     * @param int amount amount to pixelate
      */
     protected function _pixelate(int amount)
     {
@@ -661,14 +658,17 @@ class Imagick extends Adapter implements AdapterInterface
         loop {
             this->_image->scaleImage(width, height);
             this->_image->scaleImage(this->_width, this->_height);
-            if this->_image->nextImage() === false{
+            if this->_image->nextImage() === false {
                 break;
             }
         }
     }
 
     /**
-     * Execute a save.
+     * Save the image
+     *
+     * @param string file
+     * @param int quality
      */
     protected function _save(string file, int quality)
     {
@@ -724,10 +724,10 @@ class Imagick extends Adapter implements AdapterInterface
         let this->_type = image->getImageType(),
             this->_mime = "image/" . image->getImageFormat();
 
-        if strcasecmp(extension, "gif") === 0 {
+        if strcasecmp(extension, "gif") == 0 {
             image->optimizeImageLayers();
         } else {
-            if strcasecmp(extension, "jpg") === 0 || strcasecmp(extension, "jpeg") === 0 {
+            if strcasecmp(extension, "jpg") == 0 || strcasecmp(extension, "jpeg") == 0 {
                 image->setImageCompression(constant("Imagick::COMPRESSION_JPEG"));
             }
             image->setImageCompressionQuality(quality);

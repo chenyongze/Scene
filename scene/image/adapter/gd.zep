@@ -170,7 +170,6 @@ class Gd extends Adapter implements AdapterInterface
      * @param int height
      * @param int offsetX
      * @param int offsetY
-     * @return \Scene\Image\Adapter
      */
     protected function _crop(int width, int height, int offsetX, int offsetY)
     {
@@ -188,7 +187,6 @@ class Gd extends Adapter implements AdapterInterface
      * Rotate the image by a given amount
      *
      * @param int degress
-     * @return \Scene\Image\Adapter
      */
     protected function _rotate(int degrees)
     {
@@ -214,7 +212,6 @@ class Gd extends Adapter implements AdapterInterface
      * Flip the image along the horizontal or vertical axis
      *
      * @param int direction
-     * @return \Scene\Image\Adapter
      */
     protected function _flip(int direction)
     {
@@ -229,7 +226,6 @@ class Gd extends Adapter implements AdapterInterface
      * Sharpen the image by a given amount
      *
      * @param int amount
-     * @return \Scene\Image\Adapter
      */
     protected function _sharpen(int amount)
     {
@@ -255,7 +251,6 @@ class Gd extends Adapter implements AdapterInterface
      * @param int height
      * @param int opacity
      * @param boolean fadeIn
-     * @return \Scene\Image\Adapter
      */
     protected function _reflection(int height, int opacity, boolean fadeIn)
     {
@@ -307,7 +302,6 @@ class Gd extends Adapter implements AdapterInterface
      * @param int offsetX
      * @param int offsetY
      * @param int opacity
-     * @return \Scene\Image\Adapter
      */
     protected function _watermark(<Adapter> watermark, int offsetX, int offsetY, int opacity)
     {
@@ -349,7 +343,6 @@ class Gd extends Adapter implements AdapterInterface
      * @param int b
      * @param int size
      * @param string fontfile
-     * @return \Scene\Image\Adapter
      */
     protected function _text(string text, int offsetX, int offsetY, int opacity, int r, int g, int b, int size, string fontfile)
     {
@@ -409,7 +402,6 @@ class Gd extends Adapter implements AdapterInterface
      * Composite one image onto another
      *
      * @param \Scene\Image\Adapter watermark
-     * @return \Scene\Image\Adapter
      */
     protected function _mask(<Adapter> mask)
     {
@@ -468,6 +460,14 @@ class Gd extends Adapter implements AdapterInterface
         let this->_image = newimage;
     }
 
+    /**
+     * Set the background color of an image
+     *
+     * @param int r
+     * @param int g
+     * @param int a
+     * @param int opacity
+     */
     protected function _background(int r, int g, int b, int opacity)
     {
         var background, color;
@@ -477,6 +477,7 @@ class Gd extends Adapter implements AdapterInterface
         let background = this->_create(this->_width, this->_height);
 
         let color = imagecolorallocatealpha(background, r, g, b, opacity);
+        imagefilledrectangle(background, 0, 0, this->_width, this->_height, color);
         imagealphablending(background, true);
 
         if imagecopy(background, this->_image, 0, 0, 0, 0, this->_width, this->_height) {
@@ -485,6 +486,11 @@ class Gd extends Adapter implements AdapterInterface
         }
     }
 
+    /**
+     * Blur image
+     *
+     * @param int radius Blur radius
+     */
     protected function _blur(int radius)
     {
         int i;
@@ -495,29 +501,12 @@ class Gd extends Adapter implements AdapterInterface
         }
     }
 
-    protected function _pixelate(int amount)
-    {
-        var color;
-        int x, y, x1, y1, x2, y2;
-
-        let x = 0;
-        while x < this->_width {
-            let y = 0;
-            while y < this->_height {
-                let x1 = x + amount/2;
-                let y1 = y + amount/2;
-                let color = imagecolorat(this->_image, x1, y1);
-
-                let x2 = x + amount;
-                let y2 = y + amount;
-                imagefilledrectangle(this->_image, x, y, x2, y2, color);
-
-                let y += amount;
-            }
-            let x += amount;
-        }
-    }
-
+    /**
+     * Save the image
+     *
+     * @param string file
+     * @param int quality
+     */
     protected function _save(string file, int quality)
     {
         var ext;
@@ -556,24 +545,8 @@ class Gd extends Adapter implements AdapterInterface
         }
         if strcmp(ext, "png") == 0 {
             let this->_type = 3;
-            let this->_mime = image_type_to_mime_type(this->_type);
-
-            if quality >= 0 {
-                if quality < 1 {
-                    let quality = 1;
-                } elseif quality > 100 {
-                    let quality = 100;
-                }
-                let quality /= 10;
-                let quality = ceil(quality);
-                if quality >= 9 {
-                    let quality = 9;
-                }
-                imagepng(this->_image, file, quality);
-            } else {
-                imagepng(this->_image, file);
-            }
-
+            let this->_mime = image_type_to_mime_type(this->_type);       
+            imagepng(this->_image, file);
             return true;
         }
 
@@ -589,15 +562,15 @@ class Gd extends Adapter implements AdapterInterface
     protected function _render(string ext, int quality)
     {
         ob_start();
-        if strcasecmp(ext, "gif") === 0 {
+        if strcasecmp(ext, "gif") == 0 {
             imagegif(this->_image);
             return ob_get_clean();
         }
-        if strcasecmp(ext, "jpg") === 0 || strcasecmp(ext, "jpeg") === 0 {
+        if strcasecmp(ext, "jpg") == 0 || strcasecmp(ext, "jpeg") == 0 {
             imagejpeg(this->_image, null, quality);
             return ob_get_clean();
         }
-        if strcasecmp(ext, "png") === 0 {
+        if strcasecmp(ext, "png") == 0 {
             imagepng(this->_image);
             return ob_get_clean();
         }

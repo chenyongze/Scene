@@ -227,7 +227,6 @@ class File implements FileInterface
      *
      * @param string destination
      * @return boolean
-     * @throws Exception
      */
     public function moveTo(string! destination) -> boolean
     {
