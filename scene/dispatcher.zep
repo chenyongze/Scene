@@ -159,7 +159,7 @@ abstract class Dispatcher implements DispatcherInterface, InjectionAwareInterfac
      * @var null|array
      * @access protected
     */
-    protected _params;
+    protected _params = [];
 
     /**
      * Returned Value
@@ -232,14 +232,6 @@ abstract class Dispatcher implements DispatcherInterface, InjectionAwareInterfac
      * @access protected
     */
     protected _previousActionName = null;
-
-    /**
-     * Scene\Dispatcher constructor
-     */
-    public function __construct()
-    {
-        let this->_params = [];
-    }
 
     /**
      * Sets the dependency injector
@@ -463,6 +455,17 @@ abstract class Dispatcher implements DispatcherInterface, InjectionAwareInterfac
     public function getActiveMethod() -> string
     {
         return this->_actionName . this->_actionSuffix;
+    }
+
+    /**
+     * Check if a param exists
+     *
+     * @param  mixed param
+     * @return boolean
+     */
+    public function hasParam(param) -> boolean
+    {
+        return isset this->_params[param];
     }
 
     /**

@@ -88,7 +88,7 @@ class Loader implements EventsAwareInterface
      * @var array
      * @access protected
     */
-    protected _extensions;
+    protected _extensions = ["php"];
 
     /**
      * Namespaces
@@ -113,14 +113,6 @@ class Loader implements EventsAwareInterface
      * @access protected
     */
     protected _registered = false;
-
-    /**
-     * Scene\Loader constructor
-     */
-    public function __construct()
-    {
-        let this->_extensions = ["php"];
-    }
 
     /**
      * Sets the events manager

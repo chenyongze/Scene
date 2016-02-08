@@ -121,7 +121,7 @@ class Router implements InjectionAwareInterface, RouterInterface, EventsAwareInt
      * @var null|array
      * @access protected
     */
-    protected _params;
+    protected _params = [];
 
     /**
      * Routes
@@ -193,7 +193,7 @@ class Router implements InjectionAwareInterface, RouterInterface, EventsAwareInt
      * @var null|array
      * @access protected
     */
-    protected _defaultParams;
+    protected _defaultParams = [];
 
     /**
      * Remove extra slashes?
@@ -264,9 +264,7 @@ class Router implements InjectionAwareInterface, RouterInterface, EventsAwareInt
             ]);
         }
 
-        let this->_params = [],
-            this->_defaultParams = [],
-            this->_routes = routes;
+        let this->_routes = routes;
     }
 
     /**

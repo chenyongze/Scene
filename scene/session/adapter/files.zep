@@ -22,7 +22,6 @@
 
 namespace Scene\Session\Adapter;
 
-use Scene\Session\AdapterInterface;
 use Scene\Session\Adapter;
 
 /**
@@ -40,7 +39,7 @@ use Scene\Session\Adapter;
  * echo $session->get('var');
  *</code>
  */
-class Files extends Adapter implements AdapterInterface
+class Files extends Adapter
 {
 
 }

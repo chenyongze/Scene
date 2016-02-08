@@ -118,6 +118,14 @@ interface DispatcherInterface
     public function getParam(param, filters = null);
 
     /**
+     * Check if a param exists
+     *
+     * @param  mixed param
+     * @return boolean
+     */
+    public function hasParam(param) -> boolean;
+
+    /**
      * Checks if the dispatch loop is finished or has more pendent controllers/tasks to dispatch
      *
      * @return boolean

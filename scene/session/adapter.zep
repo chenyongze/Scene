@@ -27,7 +27,7 @@ namespace Scene\Session;
  *
  * Base class for Scene\Session adapters
  */
-abstract class Adapter
+abstract class Adapter implements AdapterInterface
 {
 
     const SESSION_ACTIVE = 2;
