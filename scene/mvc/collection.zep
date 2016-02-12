@@ -889,12 +889,26 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
             throw new Exception("Method getSource() returns empty string");
         }
 
-        let data = this->toArray();
+        /**
+         * The messages added to the validator are reset here
+         */
+        let this->_errorMessages = [];
+
+        let disableEvents = self::_disableEvents;
 
         /**
          * Check the dirty state of the current operation to update the current operation
          */
         let exists = this->_exists(this);
+
+        /**
+         * Execute the preSave hook
+         */
+        if this->_postSave(dependencyInjector, disableEvents, exists) === false {
+            return true;
+        }
+
+        let data = this->toArray();    
 
         let bulk = new BulkWrite();
 
@@ -907,20 +921,6 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
             let filter = ["_id": this->_id],
                 options = ["limit": 1, "upsert": false];
             bulk->update(filter, data, options);
-        }
-
-        /**
-         * The messages added to the validator are reset here
-         */
-        let this->_operationMade = [];
-
-        let disableEvents = self::_disableEvents;
-
-        /**
-         * Execute the preSave hook
-         */
-        if this->_postSave(dependencyInjector, disableEvents, exists) === false {
-            return true;
         }
 
         let success = false;
