@@ -741,7 +741,7 @@ abstract class Dispatcher implements DispatcherInterface, InjectionAwareInterfac
                 /*
                  * We update the latest value produced by the latest handler
                  */
-                let this->_returnedValue = call_user_func_array([handler, actionMethod], params),
+                let this->_returnedValue = this->callActionMethod(handler, actionMethod, params),
                     this->_lastHandler = handler;
 
             } catch \Exception, e {
@@ -893,6 +893,19 @@ abstract class Dispatcher implements DispatcherInterface, InjectionAwareInterfac
         }
 
         return handlerClass;
+    }
+
+    /**
+     * Call action method
+     * 
+     * @param  object  handler
+     * @param  string  actionMethod
+     * @param  array  params
+     * @return mixed
+     */
+    public function callActionMethod(handler, string actionMethod, array! params = [])
+    {
+        return call_user_func_array([handler, actionMethod], params);
     }
 
     /**

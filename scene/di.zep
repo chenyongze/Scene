@@ -282,15 +282,9 @@ class Di implements DiInterface
                     throw new Exception("Service '" . name . "' wasn't found in the dependency injection container");
                 }
 
-                if typeof parameters == "array" {
-                    if count(parameters) {
-                        let reflection = new \ReflectionClass(name),
-                            instance = reflection->newInstanceArgs(parameters);
-                        
-                    } else {
-                        let reflection = new \ReflectionClass(name),
-                            instance = reflection->newInstance();
-                    }
+                if typeof parameters == "array" && count(parameters) {                   
+                    let reflection = new \ReflectionClass(name),
+                        instance = reflection->newInstanceArgs(parameters);                                          
                 } else {                
                     let reflection = new \ReflectionClass(name),
                         instance = reflection->newInstance();

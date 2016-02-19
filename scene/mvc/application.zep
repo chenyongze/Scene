@@ -22,8 +22,7 @@
 
 namespace Scene\Mvc;
 
-use Scene\DiInterface;
-use Scene\Di\Injectable;
+use Scene\Application as BaseApplication;
 use Scene\Mvc\DispatcherInterface;
 use Scene\Http\ResponseInterface;
 use Scene\Mvc\ViewInterface;
@@ -77,24 +76,8 @@ use Scene\Mvc\Application\Exception;
  *
  *</code>
  */
-class Application extends Injectable
+class Application extends BaseApplication
 {
-
-    /**
-     * Default Module
-     *
-     * @var null|string
-     * @access protected
-     */
-    protected _defaultModule;
-
-    /**
-     * Modules
-     *
-     * @var null|array
-     * @access protected
-     */
-    protected _modules;
 
     /**
      * Implicit View?
@@ -105,113 +88,16 @@ class Application extends Injectable
     protected _implicitView = true;
 
     /**
-     * Scene\Mvc\Application
-     *
-     * @param \Scene\DiInterface|null $dependencyInjector
-     */
-    public function __construct(<DiInterface> dependencyInjector = null)
-    {
-        if typeof dependencyInjector == "object" {
-            let this->_dependencyInjector = dependencyInjector;
-        }
-    }
-
-    /**
      * By default. The view is implicitly buffering all the output
      * You can full disable the view component using this method
      *
-     * @param boolean $implicitView
+     * @param boolean implicitView
      * @return \Scene\Mvc\Application
      */
     public function useImplicitView(boolean implicitView) -> <Application>
     {
         let this->_implicitView = implicitView;
         return this;
-    }
-
-    /**
-     * Register an array of modules present in the application
-     *
-     *<code>
-     *  $this->registerModules(array(
-     *      'frontend' => array(
-     *          'className' => 'Multiple\Frontend\Module',
-     *          'path' => '../apps/frontend/Module.php'
-     *      ),
-     *      'backend' => array(
-     *          'className' => 'Multiple\Backend\Module',
-     *          'path' => '../apps/backend/Module.php'
-     *      )
-     *  ));
-     *</code>
-     *
-     * @param array $modules
-     * @param boolean $merge
-     * @return \Scene\Mvc\Application
-     */
-    public function registerModules(array modules, boolean merge = false) -> <Application>
-    {
-        var registeredModules;
-
-        if merge === false {
-            let this->_modules = modules;
-        } else {
-            let registeredModules = this->_modules;
-            if typeof registeredModules == "array" {
-                let this->_modules = array_merge(registeredModules, modules);
-            } else {
-                let this->_modules = modules;
-            }
-        }
-
-        return this;
-    }
-
-    /**
-     * Return the modules registered in the application
-     *
-     * @return array
-     */
-    public function getModules()
-    {
-        return this->_modules;
-    }
-
-    /**
-     * Gets the module definition registered in the application via module name
-     *
-     * @param string name
-     * @return array|object
-     */
-    public function getModule(string! name)
-    {
-        var module;
-
-        if !fetch module, this->_modules[name] {
-            throw new Exception("Module '" . name . "' isn't registered in the application container");
-        }
-
-        return module;
-    }
-
-    /**
-     * Sets the module name to be used if the router doesn't return a valid module
-     *
-     * @param string $defaultModule
-     * @return \Scene\Mvc\Application
-     */
-    public function setDefaultModule(string! defaultModule) -> <Application>
-    {
-        let this->_defaultModule = defaultModule;
-        return this;
-    }
-
-    /**
-     * Returns the default module name
-     */
-    public function getDefaultModule() -> string
-    {
-        return this->_defaultModule;
     }
 
     /**

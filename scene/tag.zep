@@ -155,19 +155,17 @@ class Tag
      */
     public static function getEscaper(array! params)
     {
-        var result, autoescape;
+        var autoescape;
 
         if !fetch autoescape, params["escape"] {
             let autoescape = self::_autoEscape;
         }
 
-        if autoescape {
-            let result = self::getEscaperService();
-        } else {
-            let result = null;
+        if !autoescape {
+            return null;
         }
 
-        return result;
+        return self::getEscaperService();
     }
 
     /**
@@ -356,15 +354,8 @@ class Tag
      */
     public static function setDefaults(array! values, boolean merge = false) -> void
     {
-        var displayValues;
-
-        if merge {
-            let displayValues = self::_displayValues;
-            if typeof displayValues == "array" {
-                let self::_displayValues = array_merge(displayValues, values);
-            } else {
-                let self::_displayValues = values;
-            }
+        if merge && typeof self::_displayValues == "array" {
+            let self::_displayValues = array_merge(self::_displayValues, values);
         } else {
             let self::_displayValues = values;
         }
