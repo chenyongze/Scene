@@ -22,8 +22,6 @@
 
 namespace Scene\Di;
 
-use Scene\Di;
-
 /**
  * Scene\Di\FactoryDefault
  *
@@ -31,7 +29,7 @@ use Scene\Di;
  * registers all the services provided by the framework. Thanks to this, the developer does not need
  * to register each service individually providing a full stack framework
  */
-class FactoryDefault extends Di
+class FactoryDefault extends \Scene\Di
 {
 
     /**
