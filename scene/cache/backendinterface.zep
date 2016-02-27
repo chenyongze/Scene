@@ -97,7 +97,7 @@ interface BackendInterface
 	 * Stores cached content into the file backend and stops the frontend
 	 *
 	 * @param int|string|null keyName
-	 * @param string|null content
+	 * @param int|string|null content
 	 * @param int|null lifetime
 	 * @param boolean|null stopBuffer
 	 */
