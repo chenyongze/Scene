@@ -1,21 +1,10 @@
 {
-    "stubs": {
-        "path": "ide\/%version%\/%namespace%\/",
-        "stubs-run-after-generate": false
-    },
-    "api": {
-        "path": "doc\/%version%",
-        "theme": {
-            "name": "zephir",
-            "options": {
-                "github": null,
-                "analytics": null,
-                "main_color": "#3E6496",
-                "link_color": "#3E6496",
-                "link_hover_color": "#5F9AE7"
-            }
-        }
-    },
+    "namespace": "scene",
+    "name": "scene",
+    "description": "Scene is a fast php framework.",
+    "author": "DangCheng",
+    "version": "0.1.0",
+    "verbose": false,
     "warnings": {
         "unused-variable": true,
         "unused-variable-external": false,
@@ -52,12 +41,6 @@
         "check-invalid-reads": false,
         "internal-call-transformation": false
     },
-    "namespace": "scene",
-    "name": "scene",
-    "description": "",
-    "author": "",
-    "version": "0.1.0",
-    "verbose": false,
     "requires": {
         "extensions": []
     }
