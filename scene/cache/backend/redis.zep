@@ -32,7 +32,7 @@ use Scene\Cache\Exception;
  *
  * Allows to cache output fragments, PHP data or raw data to a redis backend
  *
- * This adapter uses the special redis key "_PHCR" to store all the keys internally used by the adapter
+ * This adapter uses the special redis key "_SC_" to store all the keys internally used by the adapter
  *
  *<code>
  *
@@ -96,7 +96,7 @@ class Redis extends Backend implements BackendInterface
 
         if !isset options["statsKey"] {
             // Disable tracking of cached keys per default
-            let options["statsKey"] = "";
+            let options["statsKey"] = "_SC_";
         }
 
         parent::__construct(frontend, options);
@@ -164,7 +164,7 @@ class Redis extends Backend implements BackendInterface
 
         let frontend = this->_frontend;
         let prefix = this->_prefix;
-        let lastKey = "_PHCR" . prefix . keyName;
+        let lastKey = "_SC_" . prefix . keyName;
         let this->_lastKey = lastKey;
         let cachedContent = redis->get(lastKey);
 
@@ -198,7 +198,7 @@ class Redis extends Backend implements BackendInterface
         } else {
             let prefix = this->_prefix;
             let prefixedKey = prefix . keyName;
-            let lastKey = "_PHCR" . prefixedKey;
+            let lastKey = "_SC_" . prefixedKey;
         }
 
         if !lastKey {
@@ -288,7 +288,7 @@ class Redis extends Backend implements BackendInterface
 
         let prefix = this->_prefix;
         let prefixedKey = prefix . keyName;
-        let lastKey = "_PHCR" . prefixedKey;
+        let lastKey = "_SC_" . prefixedKey;
         let options = this->_options;
 
         if !fetch specialKey, options["statsKey"] {
@@ -316,7 +316,6 @@ class Redis extends Backend implements BackendInterface
         var redis, options, keys, specialKey, key, value;
 
         let redis = this->_redis;
-
         if typeof redis != "object" {
             this->_connect();
             let redis = this->_redis;
@@ -362,7 +361,7 @@ class Redis extends Backend implements BackendInterface
             let lastKey = this->_lastKey;
         } else {
             let prefix = this->_prefix;
-            let lastKey = "_PHCR" . prefix . keyName;
+            let lastKey = "_SC_" . prefix . keyName;
         }
 
         if lastKey {
@@ -393,7 +392,6 @@ class Redis extends Backend implements BackendInterface
         var redis, prefix, lastKey;
 
         let redis = this->_redis;
-
         if typeof redis != "object" {
             this->_connect();
             let redis = this->_redis;
@@ -403,7 +401,7 @@ class Redis extends Backend implements BackendInterface
             let lastKey = this->_lastKey;
         } else {
             let prefix = this->_prefix;
-            let lastKey = "_PHCR" . prefix . keyName;
+            let lastKey = "_SC_" . prefix . keyName;
             let this->_lastKey = lastKey;
         }
 
@@ -426,7 +424,6 @@ class Redis extends Backend implements BackendInterface
         var redis, prefix, lastKey;
 
         let redis = this->_redis;
-
         if typeof redis != "object" {
             this->_connect();
             let redis = this->_redis;
@@ -436,7 +433,7 @@ class Redis extends Backend implements BackendInterface
             let lastKey = this->_lastKey;
         } else {
             let prefix = this->_prefix;
-            let lastKey = "_PHCR" . prefix . keyName;
+            let lastKey = "_SC_" . prefix . keyName;
             let this->_lastKey = lastKey;
         }
 
@@ -461,7 +458,6 @@ class Redis extends Backend implements BackendInterface
         }
 
         let redis = this->_redis;
-
         if typeof redis != "object" {
             this->_connect();
             let redis = this->_redis;
@@ -474,7 +470,7 @@ class Redis extends Backend implements BackendInterface
         let keys = redis->sMembers(specialKey);
         if typeof keys == "array" {
             for key in keys {
-                let lastKey = "_PHCR" . key;
+                let lastKey = "_SC_" . key;
                 redis->sRem(specialKey, key);
                 redis->delete(lastKey);
             }
