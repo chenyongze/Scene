@@ -32,14 +32,6 @@ interface FileInterface
 {
 
      /**
-     * \Scene\Http\Request\FileInterface constructor
-     *
-     * @param array file
-     * @param mixed key
-     */
-     public function __construct(array! file, key = null);
-
-     /**
      * Returns the file size of the uploaded file
      *
      * @return int

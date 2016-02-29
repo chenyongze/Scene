@@ -34,7 +34,7 @@ interface InjectionAwareInterface
     /**
      * Sets the dependency injector
      *
-     * @param \Scene\DiInterface $dependencyInjector
+     * @param \Scene\DiInterface dependencyInjector
      */
     public function setDI(<DiInterface> dependencyInjector);
 

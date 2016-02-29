@@ -33,15 +33,6 @@ interface ServiceInterface
 {
 
     /**
-     * Phalcon\Di\ServiceInterface
-     *
-     * @param string name
-     * @param mixed definition
-     * @param boolean shared
-     */
-    public function __construct(string name, definition, boolean shared = false);
-
-    /**
      * Returns the service's name
      *
      * @param string
@@ -51,7 +42,7 @@ interface ServiceInterface
      /**
      * Sets if the service is shared or not
      *
-     * @param boolean $shared
+     * @param boolean shared
      */
     public function setShared(boolean shared);
 
@@ -65,7 +56,7 @@ interface ServiceInterface
     /**
      * Set the service definition
      *
-     * @param mixed $definition
+     * @param mixed definition
      */
     public function setDefinition(definition);
 
@@ -79,7 +70,7 @@ interface ServiceInterface
     /**
      * Resolves the service
      *
-     * @param array $parameters
+     * @param array parameters
      * @param \Scene\DiInterface|null $dependencyInjector
      * @return mixed
      */
@@ -88,8 +79,8 @@ interface ServiceInterface
     /**
      * Changes a parameter in the definition without resolve the service
      *
-     * @param int $position
-     * @param  array! $paramter
+     * @param int position
+     * @param  array paramter
      * @return  \Scene\Di\ServiceInterface
      */
     public function setParameter(int position, array! parameter) -> <ServiceInterface>;
@@ -97,7 +88,7 @@ interface ServiceInterface
     /**
      * Restore the interal state of a service
      *
-     * @param array! $attributes
+     * @param array attributes
      * @return \Scene\Di\ServiceInterface
      */
     public static function __set_state(array! attributes) -> <ServiceInterface>;

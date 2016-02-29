@@ -83,9 +83,9 @@ class Service implements ServiceInterface
     /**
      * \Scene\DI\Service
      *
-     * @param string! $name
-     * @param mixed $definition
-     * @param boolean|null $shared
+     * @param string name
+     * @param mixed definition
+     * @param boolean|null shared
      * @throws Exception
      */
     public final function __construct(string! name, definition, boolean shared = false)
@@ -108,7 +108,7 @@ class Service implements ServiceInterface
     /**
      * Sets if the service is shared or not
      *
-     * @param boolean $shared
+     * @param boolean shared
      * @throws Exception
      */
     public function setShared(boolean shared) -> void
@@ -129,7 +129,7 @@ class Service implements ServiceInterface
     /**
      * Sets/Resets the shared instance related to the service
      *
-     * @param object $sharedInstance
+     * @param object sharedInstance
      * @throws Exception
      */
     public function setSharedInstance(sharedInstance) -> void
@@ -160,7 +160,7 @@ class Service implements ServiceInterface
     /**
      * Resolves the service
      *
-     * @param array|null $parameters
+     * @param array|null parameters
      * @param \Scene\DiInterface|null $dependencyInjector
      * @return mixed
      * @throws Exception
@@ -265,8 +265,8 @@ class Service implements ServiceInterface
     /**
      * Changes a parameter in the definition without resolve the service
      *
-     * @param int $position
-     * @param array $parameter
+     * @param int position
+     * @param array parameter
      * @return \Scene\DI\ServiceInterface
      * @throws Exception
      */
@@ -304,7 +304,7 @@ class Service implements ServiceInterface
     /**
      * Returns a parameter in a specific position
      *
-     * @param int $position
+     * @param int position
      * @return array|null
      * @throws Exception
      */
@@ -340,7 +340,7 @@ class Service implements ServiceInterface
     /**
      * Restore the internal state of a service
      *
-     * @param array $attributes
+     * @param array attributes
      * @return \Scene\DI\ServiceInterface
      * @throws Exception
      */

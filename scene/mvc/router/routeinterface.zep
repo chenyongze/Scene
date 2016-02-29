@@ -29,15 +29,6 @@ namespace Scene\Mvc\Router;
  */
 interface RouteInterface
 {
-    
-    /**
-     * \Scene\Mvc\Router\Route constructor
-     *
-     * @param string pattern
-     * @param array|null paths
-     * @param array|string|null httpMethods
-     */
-    public function __construct(string! pattern, var paths = null, var httpMethods = null);
 
     /**
      * Replaces placeholders from pattern returning a valid PCRE regular expression

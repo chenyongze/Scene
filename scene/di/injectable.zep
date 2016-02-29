@@ -58,7 +58,7 @@ abstract class Injectable implements InjectionAwareInterface, EventsAwareInterfa
     /**
      * Sets the dependency injector
      *
-     * @param \Scene\DiInterface $dependencyInjector
+     * @param \Scene\DiInterface dependencyInjector
      * @throws Exception
      */
     public function setDI(<DiInterface> dependencyInjector)
@@ -85,7 +85,7 @@ abstract class Injectable implements InjectionAwareInterface, EventsAwareInterfa
     /**
      * Sets the event manager
      *
-     * @param \Scene\Events\ManagerInterface $eventsManager
+     * @param \Scene\Events\ManagerInterface eventsManager
      * @throws Exception
      */
     public function setEventsManager(<ManagerInterface> eventsManager)
@@ -106,7 +106,7 @@ abstract class Injectable implements InjectionAwareInterface, EventsAwareInterfa
     /**
      * Magic method __get
      *
-     * @param string $propertyName
+     * @param string propertyName
      * @return mixed
      */
     public function __get(string! propertyName)
