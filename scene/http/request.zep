@@ -25,8 +25,9 @@ namespace Scene\Http;
 use Scene\Http\RequestInterface;
 use Scene\http\Request\Exception;
 use Scene\Http\Request\File;
-use Scene\Di\InjectionAwareInterface;
+use Scene\Di;
 use Scene\DiInterface;
+use Scene\Di\InjectionAwareInterface;
 use Scene\FilterInterface;
 
 /**
@@ -106,7 +107,13 @@ class Request implements RequestInterface, InjectionAwareInterface
      */
     public function getDI() -> <DiInterface>
     {
-        return this->_dependencyInjector;
+        var dependencyInjector;
+
+        let dependencyInjector = this->_dependencyInjector;
+        if typeof dependencyInjector != "object" {
+            let dependencyInjector = Di::getDefault();
+        }
+        return dependencyInjector;
     }
 
     /**

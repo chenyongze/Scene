@@ -22,13 +22,14 @@
 
 namespace Scene\Http;
 
-use Scene\Di\InjectionAwareInterface;
-use Scene\DiInterface;
 use Scene\Http\ResponseInterface;
 use Scene\Http\Response\Exception;
 use Scene\Http\Response\HeadersInterface;
 use Scene\Http\Response\CookiesInterface;
 use Scene\Http\Response\Headers;
+use Scene\Di;
+use Scene\DiInterface;
+use Scene\Di\InjectionAwareInterface;
 use Scene\Mvc\UrlInterface;
 use Scene\Mvc\ViewInterface;
 
@@ -138,7 +139,13 @@ class Response implements ResponseInterface, InjectionAwareInterface
      */
     public function getDI() -> <DiInterface>
     {
-        return this->_dependencyInjector;
+        var dependencyInjector;
+
+        let dependencyInjector = this->_dependencyInjector;
+        if typeof dependencyInjector != "object" {
+            let dependencyInjector = Di::getDefault();
+        }
+        return dependencyInjector;
     }
 
     /**

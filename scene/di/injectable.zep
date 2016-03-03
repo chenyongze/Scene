@@ -24,10 +24,10 @@ namespace Scene\Di;
 
 use Scene\Di;
 use Scene\DiInterface;
-use Scene\Events\ManagerInterface;
 use Scene\Di\InjectionAwareInterface;
-use Scene\Events\EventsAwareInterface;
 use Scene\Di\Exception;
+use Scene\Events\ManagerInterface;
+use Scene\Events\EventsAwareInterface;
 use Scene\Session\BagInterface;
 
 /**

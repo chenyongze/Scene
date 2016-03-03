@@ -22,6 +22,7 @@
 
 namespace Scene;
 
+use Scene\Di;
 use Scene\DiInterface;
 use Scene\Di\InjectionAwareInterface;
 use Scene\Message\Exception;
@@ -62,7 +63,13 @@ class Message implements InjectionAwareInterface
      */
     public function getDI() -> <DiInterface>
     {
-        return this->_dependencyInjector;
+        var dependencyInjector;
+
+        let dependencyInjector = this->_dependencyInjector;
+        if typeof dependencyInjector != "object" {
+            let dependencyInjector = Di::getDefault();
+        }
+        return dependencyInjector;
     }
 
     /**

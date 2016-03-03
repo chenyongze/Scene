@@ -22,9 +22,10 @@
 
 namespace Scene\Http;
 
+use Scene\Di;
 use Scene\DiInterface;
-use Scene\CryptInterface;
 use Scene\Di\InjectionAwareInterface;
+use Scene\CryptInterface;
 use Scene\Http\Response\Exception;
 use Scene\Session\AdapterInterface as SessionInterface;
 
@@ -187,7 +188,13 @@ class Cookie implements CookieInterface, InjectionAwareInterface
      */
     public function getDI() -> <DiInterface>
     {
-        return this->_dependencyInjector;
+        var dependencyInjector;
+
+        let dependencyInjector = this->_dependencyInjector;
+        if typeof dependencyInjector != "object" {
+            let dependencyInjector = Di::getDefault();
+        }
+        return dependencyInjector;
     }
 
     /**

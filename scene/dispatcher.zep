@@ -22,6 +22,7 @@
 
 namespace Scene;
 
+use Scene\Di;
 use Scene\DiInterface;
 use Scene\Di\InjectionAwareInterface;
 use Scene\Events\ManagerInterface;
@@ -250,7 +251,13 @@ abstract class Dispatcher implements DispatcherInterface, InjectionAwareInterfac
      */
     public function getDI() -> <DiInterface>
     {
-        return this->_dependencyInjector;
+        var dependencyInjector;
+
+        let dependencyInjector = this->_dependencyInjector;
+        if typeof dependencyInjector != "object" {
+            let dependencyInjector = Di::getDefault();
+        }
+        return dependencyInjector;
     }
 
     /**
