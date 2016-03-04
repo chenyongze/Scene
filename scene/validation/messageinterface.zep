@@ -22,85 +22,27 @@
 
 namespace Scene\Validation;
 
-use Scene\Validation\MessageInterface;
-
 /**
  * Scene\Validation\Message
  *
- * Encapsulates validation info generated in the validation process
+ * Interface for Scene\Validation\Message
  */
-class Message implements MessageInterface
+interface MessageInterface
 {
-
-    /**
-     * Type
-     *
-     * @var null|string
-     * @access protected
-    */
-    protected _type;
-
-    /**
-     * Message
-     *
-     * @var null|string
-     * @access protected
-    */
-    protected _message;
-
-    /**
-     * Field
-     *
-     * @var null|string
-     * @access protected
-    */
-    protected _field;
-    
-    /**
-     * code
-     *
-     * @var null|int
-     * @access protected
-    */
-    protected _code;
-
-    /**
-     * \Scene\Validation\Message constructor
-     *
-     * @param string message
-     * @param string field
-     * @param string type
-     * @param int code
-     */
-    public function __construct(string! message, string field = null, string type = null, int code = null)
-    {
-        let this->_message = message,
-            this->_field = field,
-            this->_type = type,
-            this->_code = code;
-    }
-
     /**
      * Sets message type
      *
      * @param string type
      * @return \Scene\Mvc\Model\MessageInterface
      */
-    public function setType(string! type) -> <MessageInterface>
-    {
-        let this->_type = type;
-        return this;
-    }
+    public function setType(string! type) -> <MessageInterface>;
 
     /**
      * Returns message type
      *
      * @return string
      */
-    public function getType() -> string
-    {
-        return this->_type;
-    }
+    public function getType() -> string;
 
     /**
      * Sets verbose message
@@ -108,21 +50,14 @@ class Message implements MessageInterface
      * @param string message
      * @return \Scene\Mvc\Model\MessageInterface
      */
-    public function setMessage(string! message) -> <MessageInterface>
-    {
-        let this->_message = message;
-        return this;
-    }
+    public function setMessage(string! message) -> <MessageInterface>;
 
     /**
      * Returns verbose message
      *
      * @return string
      */
-    public function getMessage() -> string
-    {
-        return this->_message;
-    }
+    public function getMessage() -> string;
 
     /**
      * Sets field name related to message
@@ -130,52 +65,21 @@ class Message implements MessageInterface
      * @param string field
      * @return \Scene\Mvc\Model\MessageInterface
      */
-    public function setField(string! field) -> <MessageInterface>
-    {
-        let this->_field = field;
-        return this;
-    }
+    public function setField(string! field) -> <MessageInterface>;
 
     /**
      * Returns field name related to message
      *
      * @return string
      */
-    public function getField()
-    {
-        return this->_field;
-    }
-    
-    /**
-     * Sets code for the message
-     *
-     * @param int code
-     */
-    public function setCode(int! code) -> <MessageInterface>
-    {
-        let this->_code = code;
-        return this;
-    }
-
-    /**
-     * Returns the message code
-     *
-     * @return int
-     */
-    public function getCode() -> int
-    {
-        return this->_code;
-    }
+    public function getField();
 
     /**
      * Magic __toString method returns verbose message
      *
      * @return string
      */
-    public function __toString() -> string
-    {
-        return this->_message;
-    }
+    public function __toString() -> string;
 
     /**
      * Magic __set_state helps to recover messsages from serialization
@@ -183,8 +87,6 @@ class Message implements MessageInterface
      * @param array message
      * @return \Scene\Mvc\Model\MessageInterface
      */
-    public static function __set_state(array! message) -> <MessageInterface>
-    {
-        return new self(message["_message"], message["_field"], message["_type"]);
-    }
+    public static function __set_state(array! message) -> <MessageInterface>;
+
 }
