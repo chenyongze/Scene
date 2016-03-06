@@ -87,7 +87,7 @@ interface ValidationInterface
      *
      * @return array
      */
-    public function getValidators() -> <array>;
+    public function getValidators() -> array;
 
     /**
      * Returns the bound entity
@@ -102,7 +102,7 @@ interface ValidationInterface
      * @param array messages
      * @return array
      */
-    public function setDefaultMessages(array messages = []) -> <array>;
+    public function setDefaultMessages(array messages = []) -> array;
 
     /**
      * Get default message for validator type
