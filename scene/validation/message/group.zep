@@ -96,7 +96,7 @@ class Group implements \Countable, \ArrayAccess, \Iterator
      * @param scalar index
      * @param \Scene\Validation\MessageInterface message
      */
-    public function offsetSet(var index, <MessageInterface> message)
+    public function offsetSet(var index, var message)
     {
         if !is_scalar(index) {
             throw new Exception("Invalid parameter type.");
