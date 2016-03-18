@@ -87,6 +87,14 @@ class Message implements MessageInterface
     protected _collection;
 
     /**
+     * code
+     *
+     * @var null|int
+     * @access protected
+    */
+    protected _code;
+
+    /**
      * Scene\Mvc\Collection\Message constructor
      *
      * @param string message
@@ -94,11 +102,12 @@ class Message implements MessageInterface
      * @param string type
      * @param \Scene\Mvc\CollectionInterface collection
      */
-    public function __construct(string! message, field = null, type = null, collection = null)
+    public function __construct(string! message, field = null, type = null, collection = null, int code = null)
     {
         let this->_message = message,
             this->_field = field,
-            this->_type = type;
+            this->_type = type,
+            this->_code = code;
         if typeof collection == "object" {
             let this->_collection = collection;
         }
@@ -176,7 +185,7 @@ class Message implements MessageInterface
      * @param \Scene\Mvc\CollectionInterface Collection
      * @return \Scene\Mvc\Collection\Message
      */
-    public function setModel(<CollectionInterface> Collection) -> <Message>
+    public function setCollection(<CollectionInterface> Collection) -> <Message>
     {
         let this->_collection = Collection;
         return this;
@@ -187,9 +196,31 @@ class Message implements MessageInterface
      *
      * @return \Scene\Mvc\CollectionInterface|null
      */
-    public function getModel() -> <CollectionInterface>
+    public function getCollection() -> <CollectionInterface>
     {
         return this->_collection;
+    }
+
+    /**
+     * Sets code for the message
+     *
+     * @param int code
+     * @return \Scene\Mvc\MessageInterface
+     */
+    public function setCode(int! code)
+    {
+        let this->_code = code;
+        return this;
+    }
+
+    /**
+     * Returns the message code
+     *
+     * @return int
+     */
+    public function getCode() -> int
+    {
+        return this->_code;
     }
 
     /**
@@ -210,6 +241,6 @@ class Message implements MessageInterface
      */
     public static function __set_state(array! message) -> <Message>
     {
-        return new self(message["_message"], message["_field"], message["_type"]);
+        return new self(message["_message"], message["_field"], message["_type"], message["_code"]);
     }
 }

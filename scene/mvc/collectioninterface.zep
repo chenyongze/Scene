@@ -55,7 +55,7 @@ interface CollectionInterface
     public function getReservedAttributes() -> array;
 
     /**
-     * Returns collection name mapped in the model
+     * Returns collection name mapped in the collection
      *
      * @return string
      */
@@ -66,7 +66,7 @@ interface CollectionInterface
      *
      * @param string connectionService
      */
-    public function setConnectionService(string! connectionService);
+    public function setConnection(string! connectionService);
 
     /**
      * Retrieves a database connection
@@ -78,7 +78,7 @@ interface CollectionInterface
     /**
      * Returns a cloned collection
      *
-     * @param \Scene\Mvc\CollectionInterface $collection
+     * @param \Scene\Mvc\CollectionInterface collection
      * @param array document
      * @return \Scene\Mvc\CollectionInterface
      */
@@ -111,14 +111,14 @@ interface CollectionInterface
     /**
      * Returns all the validation messages
      *
-     * @return \Scene\Mvc\Model\MessageInterface[]
+     * @return \Scene\Mvc\collection\MessageInterface[]
      */
     public function getMessages() -> <MessageInterface[]>;
 
     /**
      * Appends a customized message on the validation process
      *
-     * @param \Scene\Mvc\Model\MessageInterface $message
+     * @param \Scene\Mvc\Collection\MessageInterface message
      */
     public function appendMessage(<MessageInterface> message);
 
@@ -162,7 +162,7 @@ interface CollectionInterface
     public static function count(array parameters = null);
 
     /**
-     * Deletes a model instance. Returning true on success or false otherwise
+     * Deletes a collection instance. Returning true on success or false otherwise
      *
      * @return boolean
      */

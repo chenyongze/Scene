@@ -29,10 +29,10 @@ use Scene\Events\ManagerInterface as EventsManagerInterface;
 /**
  * Scene\Mvc\Collection\Manager
  *
- * This components controls the initialization of models, keeping record of relations
- * between the different models of the application.
+ * This components controls the initialization of collections, keeping record of relations
+ * between the different collections of the application.
  *
- * A CollectionManager is injected to a model via a Dependency Injector Container such as Scene\Di.
+ * A CollectionManager is injected to a collection via a Dependency Injector Container such as Scene\Di.
  *
  * <code>
  * $di = new \Scene\Di();
@@ -48,81 +48,81 @@ interface ManagerInterface
 {
 
     /**
-     * Sets a custom events manager for a specific model
+     * Sets a custom events manager for a specific collection
      *
-     * @param \Scene\Mvc\CollectionInterface model
+     * @param \Scene\Mvc\CollectionInterface collection
      * @param \Scene\Events\ManagerInterface eventsManager
      */
-    public function setCustomEventsManager(<CollectionInterface> model, <EventsManagerInterface> eventsManager);
+    public function setCustomEventsManager(<CollectionInterface> collection, <EventsManagerInterface> eventsManager);
 
     /**
-     * Returns a custom events manager related to a model
+     * Returns a custom events manager related to a collection
      *
-     * @param \Scene\Mvc\CollectionInterface model
+     * @param \Scene\Mvc\CollectionInterface collection
      * @return \Scene\Events\ManagerInterface
      */
-    public function getCustomEventsManager(<CollectionInterface> model) -> <EventsManagerInterface>;
+    public function getCustomEventsManager(<CollectionInterface> collection) -> <EventsManagerInterface>;
 
     /**
-     * Initializes a model in the models manager
+     * Initializes a collection in the collections manager
      *
-     * @param \Scene\Mvc\CollectionInterface model
+     * @param \Scene\Mvc\CollectionInterface collection
      */
-    public function initialize(<CollectionInterface> model);
+    public function initialize(<CollectionInterface> collection);
 
     /**
-     * Check whether a model is already initialized
+     * Check whether a collection is already initialized
      *
-     * @param string modelName
+     * @param string collectionName
      * @return bool
      */
-    public function isInitialized(string! modelName) -> boolean;
+    public function isInitialized(string! collectionName) -> boolean;
 
     /**
-     * Get the latest initialized model
+     * Get the latest initialized collection
      *
      * @return \Scene\Mvc\CollectionInterface
      */
     public function getLastInitialized() -> <CollectionInterface>;
 
     /**
-     * Sets a connection service for a specific model
+     * Sets a connection service for a specific collection
      *
-     * @param \Scene\Mvc\CollectionInterface model
+     * @param \Scene\Mvc\CollectionInterface collection
      * @param string connectionService
      */
-    public function setConnectionService(<CollectionInterface> model, string! connectionService);
+    public function setConnection(<CollectionInterface> collection, string! connectionService);
 
     /**
-     * Sets if a model must use implicit objects ids
+     * Returns the connection related to a collection
      *
-     * @param \Scene\Mvc\CollectionInterface model
-     * @param boolean useImplicitObjectIds
-     */
-    public function useImplicitObjectIds(<CollectionInterface> model, boolean useImplicitObjectIds);
-
-    /**
-     * Checks if a model is using implicit object ids
-     *
-     * @param \Scene\Mvc\CollectionInterface model
-     * @return boolean
-     */
-    public function isUsingImplicitObjectIds(<CollectionInterface> model) -> boolean;
-
-    /**
-     * Returns the connection related to a model
-     *
-     * @param \Scene\Mvc\CollectionInterface model
+     * @param \Scene\Mvc\CollectionInterface collection
      * return \MongoDB\Driver\Manage
      */
-    public function getConnection(<CollectionInterface> model);
+    public function getConnection(<CollectionInterface> collection);
 
     /**
-     * Receives events generated in the models and dispatches them to a events-manager if available
-     * Notify the behaviors that are listening in the model
+     * Sets if a collection must use implicit objects ids
+     *
+     * @param \Scene\Mvc\CollectionInterface collection
+     * @param boolean useImplicitObjectIds
+     */
+    public function useImplicitObjectIds(<CollectionInterface> collection, boolean useImplicitObjectIds);
+
+    /**
+     * Checks if a collection is using implicit object ids
+     *
+     * @param \Scene\Mvc\CollectionInterface collection
+     * @return boolean
+     */
+    public function isUsingImplicitObjectIds(<CollectionInterface> collection) -> boolean;
+
+    /**
+     * Receives events generated in the collections and dispatches them to a events-manager if available
+     * Notify the behaviors that are listening in the collection
      *
      * @param string eventName
-     * @param \Scene\Mvc\CollectionInterface model
+     * @param \Scene\Mvc\CollectionInterface collection
      */
-    public function notifyEvent(string! eventName, <CollectionInterface> model);
+    public function notifyEvent(string! eventName, <CollectionInterface> collection);
 }
