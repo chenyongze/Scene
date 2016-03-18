@@ -1097,8 +1097,11 @@ class Tag
      */
     public static function getTitle(boolean tags = true) -> string
     {
-        var documentTitle;
-        let documentTitle = self::_documentTitle;
+        var documentTitle, escaper;
+
+        let escaper = <EscaperInterface> self::getEscaper(["escape": true]);
+        let documentTitle = escaper->escapeHtml(self::_documentTitle);
+        
         if tags {
             return "<title>" . documentTitle . "</title>" . PHP_EOL;
         }

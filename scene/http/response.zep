@@ -516,7 +516,7 @@ class Response implements ResponseInterface, InjectionAwareInterface
      */
     public function redirect(location = null, boolean externalRedirect = false, int statusCode = 302) -> <ResponseInterface>
     {
-        var header, url, dependencyInjector, matched, message, view;
+        var header, url, dependencyInjector, matched, view;
 
         if !location {
             let location = "";
@@ -555,13 +555,10 @@ class Response implements ResponseInterface, InjectionAwareInterface
          * The HTTP status is 302 by default, a temporary redirection
          */
         if statusCode < 300 || statusCode > 308 {
-            let statusCode = 302,
-                message = this->_statusCodes[302];
-        } else {
-            fetch message, this->_statusCodes[statusCode];
+            let statusCode = 302;
         }
 
-        this->setStatusCode(statusCode, message);
+        this->setStatusCode(statusCode);
 
         /**
          * Change the current location using 'Location'
