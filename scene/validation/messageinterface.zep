@@ -33,7 +33,7 @@ interface MessageInterface
      * Sets message type
      *
      * @param string type
-     * @return \Scene\Mvc\Model\MessageInterface
+     * @return \Scene\Validation\MessageInterface
      */
     public function setType(string! type) -> <MessageInterface>;
 
@@ -48,7 +48,7 @@ interface MessageInterface
      * Sets verbose message
      *
      * @param string message
-     * @return \Scene\Mvc\Model\MessageInterface
+     * @return \Scene\Validation\MessageInterface
      */
     public function setMessage(string! message) -> <MessageInterface>;
 
@@ -63,7 +63,7 @@ interface MessageInterface
      * Sets field name related to message
      *
      * @param string field
-     * @return \Scene\Mvc\Model\MessageInterface
+     * @return \Scene\Validation\MessageInterface
      */
     public function setField(string! field) -> <MessageInterface>;
 
@@ -85,7 +85,7 @@ interface MessageInterface
      * Magic __set_state helps to recover messsages from serialization
      *
      * @param array message
-     * @return \Scene\Mvc\Model\MessageInterface
+     * @return \Scene\Validation\MessageInterface
      */
     public static function __set_state(array! message) -> <MessageInterface>;
 
