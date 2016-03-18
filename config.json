@@ -5,6 +5,19 @@
     "author": "DangCheng",
     "version": "0.1.0",
     "verbose": false,
+    "api": {
+        "path": "doc\/%version%",
+        "theme": {
+            "name": "zephir",
+            "options": {
+                "github": "https://github.com/dangcheng/scene",
+                "analytics": null,
+                "main_color": "#99CC66",
+                "link_color": "#888888",
+                "link_hover_color": "#FF6666"
+            }
+        }
+    },
     "warnings": {
         "unused-variable": true,
         "unused-variable-external": false,
@@ -43,5 +56,8 @@
     },
     "requires": {
         "extensions": []
+    },
+    "prototype-dir": {
+        "mongodb": "prototypes/mongodb"
     }
 }
