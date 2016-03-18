@@ -27,8 +27,9 @@ use Scene\DiInterface;
 use Scene\Di\InjectionAwareInterface;
 use Scene\Mvc\Collection\ManagerInterface;
 use Scene\Mvc\Collection\Exception;
+use Scene\Mvc\Collection\Message;
 use Scene\Mvc\Collection\MessageInterface;
-use Scene\Mvc\Collection\ValidatorInterface;
+use Scene\Validation\ValidatorInterface;
 use Scene\Events\ManagerInterface as EventsManagerInterface;
 use MongoDB\Driver\BulkWrite;
 use MongoDB\Driver\Query;
@@ -41,7 +42,7 @@ use MongoDB\BSON\ObjectId;
  * This component implements a high level abstraction for NoSQL databases which
  * works with documents
  */
-abstract class Collection implements CollectionInterface, EntityInterface, InjectionAwareInterface, \Serializable
+abstract class Collection implements CollectionInterface, EntityInterface, InjectionAwareInterface, \Serializable, \JsonSerializable
 {
 
     /**
@@ -95,14 +96,6 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
      * @access protected
     */
     protected _collectionManager;
-
-    /**
-     * DB
-     *
-     * @var null|string
-     * @access protected
-    */
-    protected _db;
 
     /**
      * Source
@@ -208,42 +201,6 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
     }
 
     /**
-     * Sets a value for the _id property, creates a MongoId object if needed
-     *
-     * @param mixed id
-     */
-    public function setId(id)
-    {
-        var oid;
-
-        if typeof id != "object" {
-
-            /**
-             * Check if the model use implicit ids
-             */
-            if this->_collectionManager->isUsingImplicitObjectIds(this) {
-                let oid = new ObjectId(id);
-            } else {
-                let oid = id;
-            }
-
-        } else {
-            let oid = id;
-        }
-        let this->_id = oid;
-    }
-
-    /**
-     * Returns the value of the _id property
-     *
-     * @return \MongoId|mixed
-     */
-    public function getId()
-    {
-        return this->_id;
-    }
-
-    /**
      * Sets the dependency injection container
      *
      * @param \Scene\DiInterface $dependencyInjector
@@ -317,8 +274,7 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
                 "_operationMade": true,
                 "_errorMessages": true,
                 "_modelsManager": true,
-                "_skipped":true,
-                "_db": true
+                "_skipped":true
             ];
             let self::_reserved = reserved;
         }
@@ -334,35 +290,6 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
     protected function useImplicitObjectIds(boolean useImplicitObjectIds)
     {
         this->_collectionManager->useImplicitObjectIds(this, useImplicitObjectIds);
-    }
-
-    /**
-     * Set DB name
-     *
-     * @throws Exception
-     */
-    protected function setDB(string! db) -> <CollectionInterface>
-    {
-        let this->_db = db;
-
-        return this;
-    }
-
-    /**
-     * Get DB name
-     * 
-     * @return string
-     */
-    public function getDB() -> string
-    {
-        var db;
-
-        let db = this->_db;
-        if !db {
-            return this->_collectionManager->getDB();
-        }
-
-        return db;
     }
 
     /**
@@ -401,7 +328,7 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
      * @param string connectionService
      * @return \Scene\Mvc\CollectionInterface
      */
-    public function setConnectionService(string! connectionService) -> <CollectionInterface>
+    public function setConnection(string! connectionService) -> <CollectionInterface>
     {
         this->_collectionManager->setConnectionService(this, connectionService);
         return this;
@@ -451,6 +378,42 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
         let this->{attribute} = value;
     }
 
+        /**
+     * Sets a value for the _id property, creates a MongoId object if needed
+     *
+     * @param mixed id
+     */
+    public function setId(id)
+    {
+        var oid;
+
+        if typeof id != "object" {
+
+            /**
+             * Check if the model use implicit ids
+             */
+            if this->_collectionManager->isUsingImplicitObjectIds(this) {
+                let oid = new ObjectId(id);
+            } else {
+                let oid = id;
+            }
+
+        } else {
+            let oid = id;
+        }
+        let this->_id = oid;
+    }
+
+    /**
+     * Returns the value of the _id property
+     *
+     * @return \MongoId|mixed
+     */
+    public function getId()
+    {
+        return this->_id;
+    }
+
     /**
      * Returns a cloned collection
      *
@@ -486,17 +449,16 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
      */
     protected static function _getResultset(array filter = null, array options = null, <CollectionInterface> collection, boolean unique)
     {
-        var db, source, query, cursor, result, base, collections, document;
+        var source, query, cursor, result, base, collections, document;
         
-        let db = collection->getDB(),
-            source = collection->getSource();
+        let source = collection->getSource();
         if empty source {
             throw new Exception("Method getSource() returns empty string");
         }
 
         let query = new Query(filter, options);
 
-        let cursor = collection->getCollectionManager()->executeQuery(collection, db, source, query);
+        let cursor = collection->getCollectionManager()->executeQuery(collection, source, query);
 
         let result = cursor->toArray();
 
@@ -733,60 +695,47 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
      * Executes validators on every validation call
      *
      *<code>
-     *use Scene\Mvc\Model\Validator\ExclusionIn as ExclusionIn;
+     *use Scene\Validation;
+     *use Scene\Validation\Validator\ExclusionIn;
      *
      *class Subscriptors extends \Scene\Mvc\Collection
      *{
      *
      *  public function validation()
      *  {
-     *      this->validate(new ExclusionIn(array(
-     *          'field' => 'status',
+     *      $validator = new Validation();
+     *      $validator->add('status', new ExclusionIn(array(
      *          'domain' => array('A', 'I')
      *      )));
-     *      if (this->validationHasFailed() == true) {
-     *          return false;
-     *      }
+     *
+     *      return $this->validate($validator);
      *  }
      *
      *}
      *</code>
      *
-     * @param object validator
+     * @param \Scene\Validation\ValidatorInterface validator
      */
-    protected function validate(<ValidatorInterface> validator) -> void
+    protected function validate(<ValidatorInterface> validator)
     {
-        var message;
+        var messages, message;
+        let messages = validator->validate(null, this);
 
-        if validator->validate(this) === false {
-            for message in validator->getMessages() {
-                let this->_errorMessages[] = message;
+        // Call the validation, if it returns not the boolean we append the messages to the current object
+        if typeof messages != "boolean" {
+            for message in iterator(messages) {
+                this->appendMessage(new Message(message->getMessage(), message->getField(), message->getType()));
             }
+
+            // If there is a message, it returns false otherwise true
+            return !count(messages);
         }
+
+        return messages;
     }
 
     /**
      * Check whether validation process has generated any messages
-     *
-     *<code>
-     *use Scene\Mvc\Model\Validator\ExclusionIn as ExclusionIn;
-     *
-     *class Subscriptors extends \Scene\Mvc\Collection
-     *{
-     *
-     *  public function validation()
-     *  {
-     *      this->validate(new ExclusionIn(array(
-     *          'field' => 'status',
-     *          'domain' => array('A', 'I')
-     *      )));
-     *      if (this->validationHasFailed() == true) {
-     *          return false;
-     *      }
-     *  }
-     *
-     *}
-     *</code>
      *
      * @return boolean
      */
@@ -881,7 +830,7 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
      */
     public function save()
     {
-        var dependencyInjector, db, source, data, exists, bulk, id, filter, options, disableEvents,
+        var dependencyInjector, source, data, exists, bulk, id, filter, options, disableEvents,
             success, result;
 
         let dependencyInjector = this->_dependencyInjector;
@@ -889,8 +838,7 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
             throw new Exception("A dependency injector container is required to obtain the services related to the ORM");
         }
 
-        let db = this->getDB(),
-            source = this->getSource();
+        let source = this->getSource();
         if empty source {
             throw new Exception("Method getSource() returns empty string");
         }
@@ -931,7 +879,7 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
 
         let success = false;
 
-        let result = this->_collectionManager->executeBulkWrite(this, db, source, bulk);
+        let result = this->_collectionManager->executeBulkWrite(this, source, bulk);
 
         if empty result->getWriteErrors() {
 
@@ -961,10 +909,9 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
      */
     public function update(array filter = [], array options = [])
     {
-        var db, source, update, bulk, result;
+        var source, update, bulk, result;
 
-        let db = this->getDB(),
-            source = this->getSource();
+        let source = this->getSource();
         if empty source {
             throw new Exception("Method getSource() returns empty string");
         }
@@ -978,7 +925,7 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
         let bulk = new BulkWrite();
             bulk->update(filter, update, options);
 
-        let result = this->getCollectionManager()->executeBulkWrite(this, db, source, bulk);
+        let result = this->getCollectionManager()->executeBulkWrite(this, source, bulk);
 
         if empty result->getWriteErrors() {
             return true;
@@ -1006,7 +953,7 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
      */
     public function delete() -> boolean
     {
-        var id, disableEvents, db, source, oid, success, filter, options, bulk, result;
+        var id, disableEvents, source, oid, success, filter, options, bulk, result;
         
         if !fetch id, this->_id {
             throw new Exception("The document cannot be deleted because it doesn't exist");
@@ -1024,8 +971,7 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
             return true;
         }
 
-        let db = this->getDB(),
-            source = this->getSource();
+        let source = this->getSource();
         if empty source {
             throw new Exception("Method getSource() returns empty string");
         }
@@ -1062,7 +1008,7 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
         /* Specify the full namespace as the first argument, followed by the bulk
          * write object and an optional write concern. MongoDB\Driver\WriteResult is
          * returned on success; otherwise, an exception is thrown. */
-        let result = this->getCollectionManager()->executeBulkWrite(this, db, source, bulk);
+        let result = this->getCollectionManager()->executeBulkWrite(this, source, bulk);
 
         if (result->getDeletedCount() > 0) && empty (result->getWriteErrors()) {
             let success = true;
@@ -1086,7 +1032,7 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
      */
     public static function deleteMany(array filter = null, array options = null, boolean mode = true)
     {
-        var documents, document, className, collection, db, source, bulk, result;
+        var documents, document, className, collection, source, bulk, result;
 
         if mode {
             let documents = static::find(filter, options);
@@ -1102,9 +1048,8 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
 
             let className = get_called_class(),
                 collection = new {className}();
-
-            let db = collection->getDB(),
-                source = collection->getSource();
+            
+            let source = collection->getSource();
             if empty source {
                 throw new Exception("Method getSource() returns empty string");
             }
@@ -1124,7 +1069,7 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
             /* Specify the full namespace as the first argument, followed by the bulk
              * write object and an optional write concern. MongoDB\Driver\WriteResult is
              * returned on success; otherwise, an exception is thrown. */
-            let result = collection->getCollectionManager()->executeBulkWrite(collection, db, source, bulk);
+            let result = collection->getCollectionManager()->executeBulkWrite(collection, source, bulk);
 
             if empty result->getWriteErrors() {
                 return result->getDeletedCount();
@@ -1148,13 +1093,12 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
      */
     public static function count(array filter = null, array options = null)
     {
-        var className, collection, db, source, cmd, option, command, result;
+        var className, collection, source, cmd, option, command, result;
 
         let className = get_called_class(),
             collection = new {className}();
 
-        let db = collection->getDB(),
-            source = collection->getSource();
+        let source = collection->getSource();
         if empty source {
             throw new Exception("Method getSource() returns empty string");
         }
@@ -1173,7 +1117,7 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
 
         let command = new Command(cmd);
 
-        let result = collection->getCollectionManager()->executeCommand(collection, db, command);
+        let result = collection->getCollectionManager()->executeCommand(collection, command);
 
         return (int) result->n;
     }
@@ -1248,6 +1192,34 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
         }
 
         return data;
+    }
+
+    /**
+    * Serializes the object for json_encode
+    *
+    *<code>
+    * echo json_encode($robot);
+    *</code>
+    *
+    * @return array
+    */
+    public function jsonSerialize()
+    {
+        return this->toArray();
+    }
+
+    /**
+     * Returns a simple representation of the object that can be used with var_dump
+     *
+     *<code>
+     * var_dump($robot->dump());
+     *</code>
+     *
+     * @return array
+     */
+    public function dump()
+    {
+        return get_object_vars(this);
     }
 
     /**
@@ -1330,8 +1302,20 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
      *
      * @return \Scene\Mvc\Collection\MessageInterface[]|null
      */
-    public function getMessages() -> <MessageInterface[]>
+    public function getMessages(filter = null) -> <MessageInterface[]>
     {
+        var filtered, message;
+
+        if typeof filter == "string" && !empty filter {
+            let filtered = [];
+            for message in this->_errorMessages {
+                if message->getField() == filter {
+                    let filtered[] = message;
+                }
+            }
+            return filtered;
+        }
+
         return this->_errorMessages;
     }
 

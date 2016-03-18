@@ -28,9 +28,7 @@ use Scene\Mvc\CollectionInterface;
 use Scene\Mvc\Collection\BehaviorInterface;
 use Scene\Events\EventsAwareInterface;
 use Scene\Events\ManagerInterface as EventsManagerInterface;
-use MongoDB\Driver\Manage;
-use MongoDB\Driver\WriteConcern;
-use MongoDB\Driver\ReadPreference;
+use Scene\Mvc\Collection\Client;
 use MongoDB\Driver\BulkWrite;
 use MongoDB\Driver\Query;
 use MongoDB\Driver\Command;
@@ -39,10 +37,10 @@ use MongoDB\Driver\WriteResult;
 /**
  * Scene\Mvc\Collection\Manager
  *
- * This components controls the initialization of models, keeping record of relations
- * between the different models of the application.
+ * This components controls the initialization of collections, keeping record of relations
+ * between the different collections of the application.
  *
- * A CollectionManager is injected to a model via a Dependency Injector Container such as Scene\Di.
+ * A CollectionManager is injected to a collection via a Dependency Injector Container such as Scene\Di.
  *
  * <code>
  * $di = new \Scene\Di();
@@ -66,20 +64,20 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
     protected _dependencyInjector;
 
     /**
-     * Default DB
+     * Events Manager
      *
-     * @var string
+     * @var \Scene\Events\ManagerInterface|null
      * @access protected
-     */
-    protected _defaultDB;
+    */
+    protected _eventsManager;
 
     /**
-     * DB
+     * Custom Events Manager
      *
-     * @var string
+     * @var array|null
      * @access protected
-     */
-    protected _db;
+    */
+    protected _customEventsManager;
 
     /**
      * Initialized
@@ -98,22 +96,6 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
     protected _lastInitialized;
 
     /**
-     * Events Manager
-     *
-     * @var \Scene\Events\ManagerInterface|null
-     * @access protected
-    */
-    protected _eventsManager;
-
-    /**
-     * Custom Events Manager
-     *
-     * @var array|null
-     * @access protected
-    */
-    protected _customEventsManager;
-
-    /**
      * Connection Services
      *
      * @var null|array
@@ -122,37 +104,12 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
     protected _connectionServices;
 
     /**
-     * Write Concern
-     * 
-     * @var MongoDB\Driver\WriteConcern|null
-     * @access protected
-     */
-    protected _writeConcern;
-
-    /**
-     * Read Preference
-     * @var MongoDB\Driver\ReadPreference|null
-     * @access protected
-     */
-    protected _readPreference;
-
-    /**
      * Implicit Object Ids
      *
      * @var null|array
      * @access protected
     */
     protected _implicitObjectsIds;
-
-    /**
-     * Magager construct
-     * 
-     * @param string $defaultDB
-     */
-    public function __construct(string defaultDB = null)
-    {
-        let this->_defaultDB = defaultDB;
-    }
 
     /**
      * Sets the DependencyInjector container
@@ -195,29 +152,29 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
     }
 
     /**
-     * Sets a custom events manager for a specific model
+     * Sets a custom events manager for a specific collection
      *
-     * @param \Scene\Mvc\CollectionInterface model
+     * @param \Scene\Mvc\CollectionInterface collection
      * @param \Scene\Events\ManagerInterface eventsManager
      */
-    public function setCustomEventsManager(<CollectionInterface> model, <EventsManagerInterface> eventsManager) -> void
+    public function setCustomEventsManager(<CollectionInterface> collection, <EventsManagerInterface> eventsManager) -> void
     {
-        let this->_customEventsManager[get_class_lower(model)] = eventsManager;
+        let this->_customEventsManager[get_class_lower(collection)] = eventsManager;
     }
 
     /**
-     * Returns a custom events manager related to a model
+     * Returns a custom events manager related to a collection
      *
-     * @param \Scene\Mvc\CollectionInterface model
+     * @param \Scene\Mvc\CollectionInterface collection
      * @return \Scene\Events\ManagerInterface
      */
-    public function getCustomEventsManager(<CollectionInterface> model) //-> <EventsManagerInterface>
+    public function getCustomEventsManager(<CollectionInterface> collection) //-> <EventsManagerInterface>
     {
         var customEventsManager, className;
 
         let customEventsManager = this->_customEventsManager;
         if typeof customEventsManager == "array" {
-            let className = get_class_lower(model);
+            let className = get_class_lower(collection);
             if isset customEventsManager[className] {
                 return customEventsManager[className];
             }
@@ -283,61 +240,36 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
     }
 
     /**
-     * Set DB name
-     *
-     * @throws Exception
-     */
-    public function setDB(string db = null)
-    {
-        let this->_db = db;
-    }
-
-    /**
-     * Get DB name
-     * 
-     * @return string
-     */
-    public function getDB()
-    {
-        if this->_db {
-            return this->_db;
-        } else {
-            return this->_defaultDB;
-        }
-    }
-
-    /**
      * Sets a connection service for a specific collection
      *
      * @param \Scene\Mvc\CollectionInterface collection
      * @param string connectionService
      */
-    public function setConnectionService(<CollectionInterface> collection, string! connectionService) -> void
+    public function setConnection(<CollectionInterface> collection, string! connectionService) -> void
     {
-        let this->_connectionServices[get_class(collection)] = connectionService;
+        let this->_connectionServices[get_class_lower(collection)] = connectionService;
     }
 
     /**
      * Returns the connection related to a collection
      *
      * @param \Scene\Mvc\CollectionInterface collection
-     * @return \MongoDB\Driver\Manage
-     * @throws Exception
+     * @return \Scene\Mvc\Collection\Client
      */
-    public function getConnection(<CollectionInterface> collection) -> <Manage>
+    public function getConnection(<CollectionInterface> collection) -> <Client>
     {
-        var service, connectionService, entityName, dependencyInjector, connection;
+        var service, connectionService, className, dependencyInjector, connection;
 
-        let service = "mongo",
+        let service = "mongoClient",
             connectionService = this->_connectionServices;
         if typeof connectionService == "array" {
-            let entityName = get_class(collection);
+            let className = get_class_lower(collection);
 
             /**
              * Check if the collection has a custom connection service
              */
-            if isset connectionService[entityName] {
-                let service = connectionService[entityName];
+            if isset connectionService[className] {
+                let service = connectionService[className];
             }
         }
 
@@ -358,79 +290,6 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
     }
 
     /**
-     * Set Write Concern
-     * 
-     * @param MongoDB\Driver\WriteConcern $writeConcern
-     */
-    public function setWriteConcern(<WriteConcern> writeConcern) -> void
-    {
-        let this->_writeConcern = writeConcern;
-    }
-
-    /**
-     * Get Write Concern
-     * 
-     * @return MongoDB\Driver\WriteConcern
-     */
-    public function getWriteConcern() -> <WriteConcern>
-    {
-        var writeConcern, wc;
-
-        let writeConcern = this->_writeConcern;
-
-        if !writeConcern {
-            // Construct a write concern
-            let wc = new WriteConcern(
-                // Guarantee that writes are acknowledged by a majority of our nodes
-                WriteConcern::MAJORITY,
-                // But only wait 1000ms because we have an application to run!
-                1000
-            );
-
-            let this->_writeConcern = wc;
-            return wc;
-        }
-
-        return writeConcern;
-    }
-
-    /**
-     * Set Read Preference
-     * 
-     * @param MongoDB\Driver\ReadPreference $readPreference
-     */
-    public function setReadPreference(<ReadPreference> readPreference) -> void
-    {
-        let this->_readPreference = readPreference;
-    }
-
-    /**
-     * Set read preference
-     * 
-     * @return MongoDB\Driver\ReadPreference;
-     */
-    public function getReadPreference() -> <ReadPreference>
-    {
-        var readPreference, rp;
-
-        let readPreference = this->_readPreference;
-
-        if !readPreference {
-            // Construct a read preference
-            let rp = new ReadPreference(
-                /* We prefer to read from a secondary, but are OK with reading from the
-                 * primary if necessary (e.g. secondaries are offline) */
-                ReadPreference::RP_PRIMARY
-            );
-
-            let this->_readPreference = rp;
-            return rp;
-        }
-
-        return readPreference;
-    }
-
-    /**
      * Sets whether a collection must use implicit objects ids
      *
      * @param \Scene\Mvc\CollectionInterface collection
@@ -438,7 +297,7 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
      */
     public function useImplicitObjectIds(<CollectionInterface> collection, boolean useImplicitObjectIds) -> void
     {
-        let this->_implicitObjectsIds[get_class(collection)] = useImplicitObjectIds;
+        let this->_implicitObjectsIds[get_class_lower(collection)] = useImplicitObjectIds;
     }
 
     /**
@@ -454,7 +313,7 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
         /**
          * All collections use by default are using implicit object ids
          */
-        if fetch implicit, this->_implicitObjectsIds[get_class(collection)] {
+        if fetch implicit, this->_implicitObjectsIds[get_class_lower(collection)] {
             return implicit;
         }
 
@@ -465,87 +324,78 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
      * Executes query on a server
      * 
      * @param  \Scene\Mvc\CollectionInterface collection
-     * @param  string db
      * @param  string source
      * @param  \MongoDB\Driver\Query bulk
      * @return \MongoDB\Driver\WriteResult
      */
-    public function executeQuery(<CollectionInterface> collection, string db, string source, <Query> query) -> <WriteResult>
+    public function executeQuery(<CollectionInterface> collection, string source, <Query> query) -> <WriteResult>
     {
-        var dbCollection, connection;
-
-        if !db {
-            let db = (string) this->getDB();
-        }
-
-        let dbCollection = db . "." . source;
+        var dbCollection, connection, connectionServer, database;
 
         let connection = this->getConnection(collection);
+        let connectionServer = connection->getServer();
+        let database = connection->getDatabaseName();
+
+        let dbCollection = database . "." . source;
 
         /* Specify the full namespace as the first argument, followed by the query
          * object and an optional read preference. MongoDB\Driver\Cursor is returned
          * success; otherwise, an exception is thrown. */
-        return connection->executeQuery(dbCollection, query, this->getReadPreference());
+        return connectionServer->executeQuery(dbCollection, query, connection->getReadPreference());
     }
 
     /**
      * Executes one or more write operations on the primary server.
      * 
      * @param  \Scene\Mvc\CollectionInterface collection
-     * @param  string db
      * @param  string source
      * @param  \MongoDB\Driver\BulkWrite bulk
      * @return \MongoDB\Driver\WriteResult
      */
-    public function executeBulkWrite(<CollectionInterface> collection, string db, string source, <BulkWrite> bulk) -> <WriteResult>
+    public function executeBulkWrite(<CollectionInterface> collection, string source, <BulkWrite> bulk) -> <WriteResult>
     {
-        var dbCollection, connection;
-
-        if !db {
-            let db = (string) this->getDB();
-        }
-
-        let dbCollection = db . "." . source;
+        var dbCollection, connection, connectionServer, database;
 
         let connection = this->getConnection(collection);
+        let connectionServer = connection->getServer();
+        let database = connection->getDatabaseName();
+
+        let dbCollection = database . "." . source;
 
         /* Specify the full namespace as the first argument, followed by the bulk
          * write object and an optional write concern. MongoDB\Driver\WriteResult is
          * returned on success; otherwise, an exception is thrown. */
-        return connection->executeBulkWrite(dbCollection, bulk, this->getWriteConcern());
+        return connectionServer->executeBulkWrite(dbCollection, bulk, connection->getWriteConcern());
     }
 
     /**
      * Execute a database command
      * 
      * @param  \Scene\Mvc\CollectionInterface $collection
-     * @param  string $db
      * @param  \MongoDB\Driver\Command $command
      * @return array
      */
-    public function executeCommand(<CollectionInterface> collection, string db, string source, <command> command) -> array
+    public function executeCommand(<CollectionInterface> collection, string source, <command> command) -> array
     {
-        var connection, cursor;
+        var connection, connectionServer, database, cursor;
         
-        if !db {
-            let db = (string) this->getDB();
-        }
-
         let connection = this->getConnection(collection);
+        let connectionServer = connection->getServer();
+        let database = connection->getDatabaseName();
 
-        let cursor = connection->executeCommand(db, command, this->getReadPreference());
+        let cursor = connectionServer->executeCommand(database, command, connection->getReadPreference());
         return current(cursor->toArray());
     }
 
     /**
-     * Receives events generated in the models and dispatches them to a events-manager if available
-     * Notify the behaviors that are listening in the model
+     * Receives events generated in the collections and dispatches them to a events-manager if available
+     * Notify the behaviors that are listening in the collection
      *
      * @param string $eventName
-     * @param \Scene\Mvc\CollectionInterface $model
+     * @param \Scene\Mvc\CollectionInterface $collection
      * @return mixed
      */
-    public function notifyEvent(string! eventName, <CollectionInterface> model)
+    public function notifyEvent(string! eventName, <CollectionInterface> collection)
     {
         var eventsManager, status = null, customEventsManager;
 
@@ -554,19 +404,19 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
          */
         let eventsManager = this->_eventsManager;
         if typeof eventsManager == "object" {
-            let status = eventsManager->fire( "collection:" . eventName, model);
+            let status = eventsManager->fire( "collection:" . eventName, collection);
             if !status {
                 return status;
             }
         }
 
         /**
-         * A model can has a specific events manager for it
+         * A collection can has a specific events manager for it
          */
         let customEventsManager = this->_customEventsManager;
         if typeof customEventsManager == "array" {
-            if isset customEventsManager[get_class_lower(model)] {
-                let status = customEventsManager->fire("collection:" . eventName, model);
+            if isset customEventsManager[get_class_lower(collection)] {
+                let status = customEventsManager->fire("collection:" . eventName, collection);
                 if !status {
                     return status;
                 }

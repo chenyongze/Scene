@@ -20,69 +20,58 @@
  +------------------------------------------------------------------------+
  */
 
-namespace Scene\Mvc\Collection;
+namespace Scene\Validation\Validator;
+
+use Scene\Validation;
+use Scene\Validation\Message;
+use Scene\Validation\Validator;
 
 /**
- * Scene\Mvc\Collection\Message
+ * Scene\Validation\Validator\Email
  *
- * Interface for Scene\Mvc\Collection\Message
+ * Checks if a value has a correct e-mail format
+ *
+ *<code>
+ *use Scene\Validation\Validator\Email as EmailValidator;
+ *
+ *$validator->add('email', new EmailValidator(array(
+ *   'message' => 'The e-mail is not valid'
+ *)));
+ *</code>
  */
-interface MessageInterface
+class Email extends Validator
 {
 
     /**
-     * Sets message type
+     * Executes the validation
      *
-     * @param string type
+     * @param \Scene\Validation $validation
+     * @param string $field
+     * @return boolean
      */
-    public function setType(type);
+    public function validate(<Validation> validation, string! field) -> boolean
+    {
+        var value, message, label, replacePairs;
 
-    /**
-     * Returns message type
-     *
-     * @return string
-     */
-    public function getType();
+        let value = validation->getValue(field);
 
-    /**
-     * Sets verbose message
-     *
-     * @param string message
-     */
-    public function setMessage(message);
+        if !filter_var(value, FILTER_VALIDATE_EMAIL) {
 
-    /**
-     * Returns verbose message
-     *
-     * @return string
-     */
-    public function getMessage();
+            let label = this->getOption("label");
+            if empty label {
+                let label = validation->getLabel(field);
+            }
 
-    /**
-     * Sets field name related to message
-     *
-     * @param string field
-     */
-    public function setField(field);
+            let message = this->getOption("message");
+            let replacePairs = [":field": label];
+            if empty message {
+                let message = validation->getDefaultMessage("Email");
+            }
 
-    /**
-     * Returns field name related to message
-     *
-     * @return string
-     */
-    public function getField();
+            validation->appendMessage(new Message(strtr(message, replacePairs), field, "Email", this->getOption("code")));
+            return false;
+        }
 
-    /**
-     * Magic __toString method returns verbose message
-     */
-    public function __toString() -> string;
-
-    /**
-     * Magic __set_state helps to recover messsages from serialization
-     *
-     * @param array $message
-     * @return \Scene\Mvc\Collection\MessageInterface
-     */
-    public static function __set_state(array! message) -> <MessageInterface>;
-
+        return true;
+    }
 }
