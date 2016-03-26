@@ -61,7 +61,7 @@ class Security implements InjectionAwareInterface
      * @var int
      * @access protected
     */
-    protected _workFactor = 8;
+    protected _workFactor = 8 { get };
 
     /**
      * Number of Bytes
@@ -162,6 +162,16 @@ class Security implements InjectionAwareInterface
     public function getRandomBytes() -> string
     {
         return this->_numberBytes;
+    }
+
+    /**
+     * Sets the default working factor for bcrypts password's salts
+     *
+     * @param int $workFactor
+     */
+    public function setWorkFactor(int! workFactor)
+    {
+    	let this->_workFactor = workFactor;
     }
 
     /**

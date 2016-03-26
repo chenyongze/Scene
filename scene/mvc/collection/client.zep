@@ -84,7 +84,7 @@ class Client
      * @param array options
      * @param array driverOptions
      */
-    public function __construct(string! uri = "mongodb://localhost:27017", array options, array driverOptions)
+    public function __construct(string! uri = "mongodb://localhost:27017", array options = [], array driverOptions = [])
     {
     	let this->_manager = new mongoManager(uri, options, driverOptions);
     	let this->_uri = uri;
