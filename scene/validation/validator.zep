@@ -23,7 +23,6 @@
 namespace Scene\Validation;
 
 use Scene\Validation;
-use Scene\Validation\Exception;
 use Scene\Validation\ValidatorInterface;
 
 /**
