@@ -470,14 +470,13 @@ class Security implements InjectionAwareInterface
             throw new Exception("Openssl extension must be loaded");
         }
 
-        let token = self::filterAlnum(base64_encode(openssl_random_pseudo_bytes(numberBytes)));
-
         let dependencyInjector = <DiInterface> this->_dependencyInjector;
 
         if typeof dependencyInjector != "object" {
             throw new Exception("A dependency injection container is required to access the 'session' service");
         }
-
+        
+        let token = self::filterAlnum(base64_encode(openssl_random_pseudo_bytes(numberBytes)));
         let session = <SessionInterface> dependencyInjector->getShared("session");
         session->set(this->_tokenValueSessionID, token);
 
