@@ -757,8 +757,8 @@ class Imagick extends Adapter implements AdapterInterface
 
     /**
      * Sets the limit for a particular resource in megabytes
-     * @param int type Refer to the list of resourcetype constants (@see http://php.net/manual/ru/imagick.constants.php#imagick.constants.resourcetypes.)
-     * @param int limit The resource limit. The unit depends on the type of the resource being limited.
+     *
+     * @link http://php.net/manual/ru/imagick.constants.php#imagick.constants.resourcetypes
      */
     public function setResourceLimit(int type, int limit)
     {

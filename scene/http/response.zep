@@ -98,14 +98,6 @@ class Response implements ResponseInterface, InjectionAwareInterface
     protected _dependencyInjector;
 
     /**
-     * StatusCodes
-     *
-     * @var null|\Scene\DiInterface
-     * @access protected
-    */
-    protected _statusCodes;
-
-    /**
      * Scene\Http\Response constructor
      *
      * @param string content
@@ -114,6 +106,11 @@ class Response implements ResponseInterface, InjectionAwareInterface
      */
     public function __construct(content = null, code = null, status = null)
     {
+        /**
+         * A Phalcon\Http\Response\Headers bag is temporary used to manage the headers before sent them to the client
+         */
+        let this->_headers = new Headers();
+
         if content !== null {
             let this->_content = content;
         }
@@ -158,11 +155,10 @@ class Response implements ResponseInterface, InjectionAwareInterface
      * @param int code
      * @param string message
      * @return \Scene\Http\ResponseInterface
-     * @throws Exception
      */
     public function setStatusCode(int code, string message = null) -> <ResponseInterface>
     {
-        var headers, currentHeadersRaw, key, defaultMessage;
+        var headers, currentHeadersRaw, key, defaultMessage, statusCodes;
 
         let headers = this->getHeaders(),
             currentHeadersRaw = headers->toArray();
@@ -184,78 +180,81 @@ class Response implements ResponseInterface, InjectionAwareInterface
         // status code. If a default doesn't exist, stop here.
         if message === null {
 
-            if typeof this->_statusCodes != "array" {
-                let this->_statusCodes = [
-                    // INFORMATIONAL CODES
-                    100 : "Continue",
-                    101 : "Switching Protocols",
-                    102 : "Processing",
-                    // SUCCESS CODES
-                    200 : "OK",
-                    201 : "Created",
-                    202 : "Accepted",
-                    203 : "Non-Authoritative Information",
-                    204 : "No Content",
-                    205 : "Reset Content",
-                    206 : "Partial Content",
-                    207 : "Multi-status",
-                    208 : "Already Reported",
-                    // REDIRECTION CODES
-                    300 : "Multiple Choices",
-                    301 : "Moved Permanently",
-                    302 : "Found",
-                    303 : "See Other",
-                    304 : "Not Modified",
-                    305 : "Use Proxy",
-                    306 : "Switch Proxy", // Deprecated
-                    307 : "Temporary Redirect",
-                    // CLIENT ERROR
-                    400 : "Bad Request",
-                    401 : "Unauthorized",
-                    402 : "Payment Required",
-                    403 : "Forbidden",
-                    404 : "Not Found",
-                    405 : "Method Not Allowed",
-                    406 : "Not Acceptable",
-                    407 : "Proxy Authentication Required",
-                    408 : "Request Time-out",
-                    409 : "Conflict",
-                    410 : "Gone",
-                    411 : "Length Required",
-                    412 : "Precondition Failed",
-                    413 : "Request Entity Too Large",
-                    414 : "Request-URI Too Large",
-                    415 : "Unsupported Media Type",
-                    416 : "Requested range not satisfiable",
-                    417 : "Expectation Failed",
-                    418 : "I'm a teapot",
-                    422 : "Unprocessable Entity",
-                    423 : "Locked",
-                    424 : "Failed Dependency",
-                    425 : "Unordered Collection",
-                    426 : "Upgrade Required",
-                    428 : "Precondition Required",
-                    429 : "Too Many Requests",
-                    431 : "Request Header Fields Too Large",
-                    // SERVER ERROR
-                    500 : "Internal Server Error",
-                    501 : "Not Implemented",
-                    502 : "Bad Gateway",
-                    503 : "Service Unavailable",
-                    504 : "Gateway Time-out",
-                    505 : "HTTP Version not supported",
-                    506 : "Variant Also Negotiates",
-                    507 : "Insufficient Storage",
-                    508 : "Loop Detected",
-                    511 : "Network Authentication Required"
-                ];
-            }
+            let statusCodes = [
+                // INFORMATIONAL CODES
+                100 : "Continue",
+                101 : "Switching Protocols",
+                102 : "Processing",
+                // SUCCESS CODES
+                200 : "OK",
+                201 : "Created",
+                202 : "Accepted",
+                203 : "Non-Authoritative Information",
+                204 : "No Content",
+                205 : "Reset Content",
+                206 : "Partial Content",
+                207 : "Multi-status",
+                208 : "Already Reported",
+                226 : "IM Used",
+                // REDIRECTION CODES
+                300 : "Multiple Choices",
+                301 : "Moved Permanently",
+                302 : "Found",
+                303 : "See Other",
+                304 : "Not Modified",
+                305 : "Use Proxy",
+                306 : "Switch Proxy", // Deprecated
+                307 : "Temporary Redirect",
+                308 : "Permanent Redirect",
+                // CLIENT ERROR
+                400 : "Bad Request",
+                401 : "Unauthorized",
+                402 : "Payment Required",
+                403 : "Forbidden",
+                404 : "Not Found",
+                405 : "Method Not Allowed",
+                406 : "Not Acceptable",
+                407 : "Proxy Authentication Required",
+                408 : "Request Time-out",
+                409 : "Conflict",
+                410 : "Gone",
+                411 : "Length Required",
+                412 : "Precondition Failed",
+                413 : "Request Entity Too Large",
+                414 : "Request-URI Too Large",
+                415 : "Unsupported Media Type",
+                416 : "Requested range not satisfiable",
+                417 : "Expectation Failed",
+                418 : "I'm a teapot",
+                421 : "Misdirected Request",
+                422 : "Unprocessable Entity",
+                423 : "Locked",
+                424 : "Failed Dependency",
+                425 : "Unordered Collection",
+                426 : "Upgrade Required",
+                428 : "Precondition Required",
+                429 : "Too Many Requests",
+                431 : "Request Header Fields Too Large",
+                451 : "Unavailable For Legal Reasons",
+                499 : "Client Closed Request",
+                // SERVER ERROR
+                500 : "Internal Server Error",
+                501 : "Not Implemented",
+                502 : "Bad Gateway",
+                503 : "Service Unavailable",
+                504 : "Gateway Time-out",
+                505 : "HTTP Version not supported",
+                506 : "Variant Also Negotiates",
+                507 : "Insufficient Storage",
+                508 : "Loop Detected",
+                511 : "Network Authentication Required"
+            ];
 
-            if !isset this->_statusCodes[code] {
+            if !isset statusCodes[code] {
                 throw new Exception("Non-standard statuscode given without a message");
             }
 
-            let defaultMessage = this->_statusCodes[code],
+            let defaultMessage = statusCodes[code],
                 message = defaultMessage;
         }
 
@@ -288,7 +287,6 @@ class Response implements ResponseInterface, InjectionAwareInterface
      *
      * @param \Scene\Http\Response\HeadersInterface headers
      * @return \Scene\Http\ResponseInterface
-     * @throws Exception
      */
     public function setHeaders(<HeadersInterface> headers) -> <ResponseInterface>
     {
@@ -303,16 +301,7 @@ class Response implements ResponseInterface, InjectionAwareInterface
      */
     public function getHeaders() -> <HeadersInterface>
     {
-        var headers;
-        let headers = this->_headers;
-        if headers === null {
-            /**
-             * A Scene\Http\Response\Headers bag is temporary used to manage the headers before sent them to the client
-             */
-            let headers = new Headers(),
-                this->_headers = headers;
-        }
-        return headers;
+        return this->_headers;
     }
 
     /**
@@ -320,7 +309,6 @@ class Response implements ResponseInterface, InjectionAwareInterface
      *
      * @param \Scene\Http\Response\CookiesInterface cookies
      * @return \Scene\Http\ResponseInterface
-     * @throws Exception
      */
     public function setCookies(<CookiesInterface> cookies) -> <ResponseInterface>
     {
@@ -348,7 +336,6 @@ class Response implements ResponseInterface, InjectionAwareInterface
      * @param string name
      * @param string value
      * @return \Scene\Http\ResponseInterface
-     * @throws Exception
      */
     public function setHeader(string name, value) -> <ResponseInterface>
     {
@@ -367,7 +354,6 @@ class Response implements ResponseInterface, InjectionAwareInterface
      *
      * @param string header
      * @return \Scene\Http\ResponseInterface
-     * @throws Exception
      */
     public function setRawHeader(string header) -> <ResponseInterface>
     {
@@ -399,7 +385,6 @@ class Response implements ResponseInterface, InjectionAwareInterface
      *
      * @param DateTime datetime
      * @return \Scene\Http\ResponseInterface
-     * @throws Exception
      */
     public function setExpires(<\DateTime> datetime) -> <ResponseInterface>
     {
@@ -417,6 +402,35 @@ class Response implements ResponseInterface, InjectionAwareInterface
          * The 'Expires' header set this info
          */
         this->setHeader("Expires", date->format("D, d M Y H:i:s") . " GMT");
+        return this;
+    }
+
+    /**
+     * Sets Last-Modified header
+     *
+     *<code>
+     *  $this->response->setLastModified(new DateTime());
+     *</code>
+     *
+     * @param \DateTime datetime
+     * @return \Scene\Http\ResponseInterface
+     */
+    public function setLastModified(<\DateTime> datetime) -> <ResponseInterface>
+    {
+        var date;
+
+        let date = clone datetime;
+
+        /**
+         * All the Last-Modified times are sent in UTC
+         * Change the timezone to utc
+         */
+        date->setTimezone(new \DateTimeZone("UTC"));
+
+        /**
+         * The 'Last-Modified' header sets this info
+         */
+        this->setHeader("Last-Modified", date->format("D, d M Y H:i:s") . " GMT");
         return this;
     }
 
@@ -465,17 +479,15 @@ class Response implements ResponseInterface, InjectionAwareInterface
      * @param string contentType
      * @param string|null charset
      * @return \Scene\Http\ResponseInterface
-     * @throws Exception
      */
     public function setContentType(string contentType, charset = null) -> <ResponseInterface>
     {
-        var headers;
-        let headers = this->getHeaders();
         if charset === null {
-            headers->set("Content-Type", contentType);
+            this->setHeader("Content-Type", contentType);
         } else {
-            headers->set("Content-Type", contentType . "; charset=" . charset);
+            this->setHeader("Content-Type", contentType . "; charset=" . charset);
         }
+
         return this;
     }
 
@@ -487,13 +499,11 @@ class Response implements ResponseInterface, InjectionAwareInterface
      *</code>
      *
      * @param string etag
-     * @throws Exception
      */
     public function setEtag(string etag) -> <ResponseInterface>
     {
-        var headers;
-        let headers = this->getHeaders();
-        headers->set("Etag", etag);
+        this->setHeader("Etag", etag);
+
         return this;
     }
 
@@ -512,7 +522,6 @@ class Response implements ResponseInterface, InjectionAwareInterface
      * @param boolean|null externalRedirect
      * @param int|null statusCode
      * @return \Scene\Http\ResponseInterface
-     * @throws Exception
      */
     public function redirect(location = null, boolean externalRedirect = false, int statusCode = 302) -> <ResponseInterface>
     {
@@ -577,7 +586,6 @@ class Response implements ResponseInterface, InjectionAwareInterface
      *
      * @param string content
      * @return \Scene\Http\ResponseInterface
-     * @throws Exception
      */
     public function setContent(string content) -> <ResponseInterface>
     {
@@ -608,7 +616,6 @@ class Response implements ResponseInterface, InjectionAwareInterface
      *
      * @param string content
      * @return \Scene\Http\ResponseInterface
-     * @throws Exception
      */
     public function appendContent(content) -> <ResponseInterface>
     {
@@ -643,11 +650,7 @@ class Response implements ResponseInterface, InjectionAwareInterface
      */
     public function sendHeaders() -> <ResponseInterface>
     {
-        var headers;
-        let headers = this->_headers;
-        if typeof headers == "object" {
-            headers->send();
-        }
+        this->_headers->send();
         return this;
     }
 
@@ -670,31 +673,18 @@ class Response implements ResponseInterface, InjectionAwareInterface
      * Prints out HTTP response to the client
      *
      * @return \Scene\Http\ResponseInterface
-     * @throws Exception
      */
     public function send() -> <ResponseInterface>
     {
-        var headers, cookies, content, file;
+        var content, file;
 
         if this->_sent {
             throw new Exception("Response was already sent");
         }
 
-        /**
-         * Send headers
-         */
-        let headers = this->_headers;
-        if typeof headers == "object" {
-            headers->send();
-        }
+        this->sendHeaders();
 
-        /**
-         * Send Cookies/comment>
-         */
-        let cookies = this->_cookies;
-        if typeof cookies == "object" {
-            cookies->send();
-        }
+        this->sendCookies();
 
         /**
          * Output the response body
@@ -724,7 +714,7 @@ class Response implements ResponseInterface, InjectionAwareInterface
      */
     public function setFileToSend(string filePath, attachmentName = null, attachment = true) -> <ResponseInterface>
     {
-        var basePath, headers;
+        var basePath;
 
         if typeof attachmentName != "string" {
             let basePath = basename(filePath);
@@ -733,12 +723,10 @@ class Response implements ResponseInterface, InjectionAwareInterface
         }
 
         if attachment {
-            let headers = this->getHeaders();
-
-            headers->setRaw("Content-Description: File Transfer");
-            headers->setRaw("Content-Type: application/octet-stream");
-            headers->setRaw("Content-Disposition: attachment; filename=" . basePath);
-            headers->setRaw("Content-Transfer-Encoding: binary");
+            this->setRawHeader("Content-Description: File Transfer");
+            this->setRawHeader("Content-Type: application/octet-stream");
+            this->setRawHeader("Content-Disposition: attachment; filename=" . basePath);
+            this->setRawHeader("Content-Transfer-Encoding: binary");
         }
 
         let this->_file = filePath;

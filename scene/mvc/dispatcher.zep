@@ -208,7 +208,7 @@ class Dispatcher extends BaseDispatcher implements DispatcherInterface
     }
 
     /**
-     * Returns the lastest dispatched controller
+     * Returns the latest dispatched controller
      *
      * @return \Scene\Mvc\ControllerInterface|null
      */

@@ -508,16 +508,38 @@ abstract class Dispatcher implements DispatcherInterface, InjectionAwareInterfac
     /**
      * Dispatches a handle action taking into account the routing parameters
      *
-     * @return object
+     * @return object|boolean
      */
     public function dispatch()
+    {
+        var handler, e;
+
+        try {
+            let handler = this->_dispatch();
+        } catch \Exception, e {
+            if this->{"_handleException"}(e) === false {
+                return false;
+            }
+
+            throw e;
+        }
+
+        return handler;
+    }
+
+    /**
+     * Dispatches a handle action taking into account the routing parameters
+     *
+     * @return object|boolean
+     */
+    protected function _dispatch()
     {
         boolean hasService;
         int numberDispatches;
         var value, handler, dependencyInjector, namespaceName, handlerName,
             actionName, params, eventsManager,
             actionSuffix, handlerClass, status, actionMethod,
-            wasFresh = false, e;
+            wasFresh = false;
 
         let dependencyInjector = <DiInterface> this->_dependencyInjector;
         if typeof dependencyInjector != "object" {
@@ -655,7 +677,7 @@ abstract class Dispatcher implements DispatcherInterface, InjectionAwareInterfac
              */
             let actionMethod = actionName . actionSuffix;
 
-            if !method_exists(handler, actionMethod) {
+            if !is_callable([handler, actionMethod]) {
 
                 /*
                  * Call beforeNotFoundAction
@@ -745,22 +767,10 @@ abstract class Dispatcher implements DispatcherInterface, InjectionAwareInterfac
 
             let this->_lastHandler = handler;
 
-            try {
-
-                /*
-                 * We update the latest value produced by the latest handler
-                 */
-                let this->_returnedValue = this->callActionMethod(handler, actionMethod, params);
-
-            } catch \Exception, e {
-                if this->{"_handleException"}(e) === false {
-                    if this->_finished === false {
-                        continue;
-                    }
-                } else {
-                    throw new Exception(e);
-                }
-            }
+            /*
+             * We update the latest value produced by the latest handler
+             */
+            let this->_returnedValue = this->callActionMethod(handler, actionMethod, params);
 
             /*
              * Calling afterExecuteRoute
