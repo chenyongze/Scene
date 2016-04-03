@@ -35,7 +35,7 @@ abstract class Formatter implements FormatterInterface
     /**
      * Returns the string meaning of a logger constant
      *
-     * @param int $type
+     * @param int type
      * @return string
      */
     public function getTypeString(int type) -> string
@@ -80,8 +80,8 @@ abstract class Formatter implements FormatterInterface
      * Interpolates context values into the message placeholders
      *
      * @see http://www.php-fig.org/psr/psr-3/ Section 1.2 Message
-     * @param string $message
-     * @param array $context
+     * @param string message
+     * @param array context
      */
     public function interpolate(string message, var context = null)
     {

@@ -20,92 +20,37 @@
  +------------------------------------------------------------------------+
  */
 
-namespace Scene;
+namespace Scene\Logger\Formatter;
+
+use Scene\Logger\Formatter;
 
 /**
- * Scene\Logger
+ * Scene\Logger\Formatter\Json
  *
- * Scene\Logger is a component whose purpose is create logs using
- * different backends via adapters, generating options, formats and filters
- * also implementing transactions.
- *
- *<code>
- *  $logger = new \Scene\Logger\Adapter\File("app/logs/test.log");
- *  $logger->log("This is a message");
- *  $logger->log(\Scene\Logger::ERROR, "This is an error");
- *  $logger->error("This is another error");
- *</code>
+ * Formats messages using JSON encoding
  */
-abstract class Logger
+class Json extends Formatter
 {
-    
-    /**
-     * Special
-     *
-     * @var int
-    */
-    const SPECIAL = 9;
 
-    /**
-     * Custom
-     *
-     * @var int
-    */
-    const CUSTOM = 8;
+	/**
+	 * Applies a format to a message before sent it to the internal log
+	 *
+	 * @param string message
+	 * @param int type
+	 * @param int timestamp
+	 * @param array context
+	 * @return string
+	 */
+	public function format(string message, int type, int timestamp, var context = null) -> string
+	{
+		if typeof context === "array" {
+			let message = this->interpolate(message, context);
+		}
 
-    /**
-     * Debug
-     *
-     * @var int
-    */
-    const DEBUG = 7;
-
-    /**
-     * Info
-     *
-     * @var int
-    */
-    const INFO = 6;
-
-    /**
-     * Notice
-     *
-     * @var int
-    */
-    const NOTICE = 5;
-
-    /**
-     * Warning
-     *
-     * @var int
-    */
-    const WARNING = 4;
-
-    /**
-     * Error
-     *
-     * @var int
-    */
-    const ERROR = 3;
-
-    /**
-     * Alert
-     *
-     * @var int
-    */
-    const ALERT = 2;
-
-    /**
-     * Critical
-     *
-     * @var int
-    */
-    const CRITICAL = 1;
-
-    /**
-     * Emergence
-     *
-     * @var int
-    */
-    const EMERGENCY = 0;
+		return json_encode([
+			"type": this->getTypeString(type),
+			"message": message,
+			"timestamp": timestamp
+		]) . PHP_EOL;
+	}
 }
