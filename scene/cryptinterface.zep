@@ -46,21 +46,6 @@ interface CryptInterface
      public function getCipher() -> string;
 
      /**
-     * Sets the encrypt/decrypt mode
-     *
-     * @param string mode
-     * @return \Scene\CryptInterface
-     */
-     public function setMode(string! mode) -> <CryptInterface>;
-
-     /**
-     * Returns the current encryption mode
-     *
-     * @return string
-     */
-     public function getMode() -> string;
-
-     /**
      * Sets the encryption key
      *
      * @param string key
@@ -117,11 +102,4 @@ interface CryptInterface
      * @return array
      */
      public function getAvailableCiphers() -> array;
-
-     /**
-     * Returns a list of available modes
-     *
-     * @return array
-     */
-     public function getAvailableModes() -> array;
 }

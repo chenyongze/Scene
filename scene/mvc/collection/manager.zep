@@ -371,11 +371,11 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
     /**
      * Execute a database command
      * 
-     * @param  \Scene\Mvc\CollectionInterface $collection
-     * @param  \MongoDB\Driver\Command $command
+     * @param  \Scene\Mvc\CollectionInterface collection
+     * @param  \MongoDB\Driver\Command command
      * @return array
      */
-    public function executeCommand(<CollectionInterface> collection, string source, <command> command) -> array
+    public function executeCommand(<CollectionInterface> collection, <command> command) -> array
     {
         var connection, connectionServer, database, cursor;
         
@@ -391,8 +391,8 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
      * Receives events generated in the collections and dispatches them to a events-manager if available
      * Notify the behaviors that are listening in the collection
      *
-     * @param string $eventName
-     * @param \Scene\Mvc\CollectionInterface $collection
+     * @param string eventName
+     * @param \Scene\Mvc\CollectionInterface collection
      * @return mixed
      */
     public function notifyEvent(string! eventName, <CollectionInterface> collection)

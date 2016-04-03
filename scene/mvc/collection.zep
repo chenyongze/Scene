@@ -29,7 +29,7 @@ use Scene\Mvc\Collection\ManagerInterface;
 use Scene\Mvc\Collection\Exception;
 use Scene\Mvc\Collection\Message;
 use Scene\Mvc\Collection\MessageInterface;
-use Scene\Validation\ValidatorInterface;
+use Scene\ValidationInterface;
 use Scene\Events\ManagerInterface as EventsManagerInterface;
 use MongoDB\Driver\BulkWrite;
 use MongoDB\Driver\Query;
@@ -298,7 +298,7 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
      * @param string source
      * @return \Scene\Mvc\CollectionInterface
      */
-    protected function setSource(string! source) -> <CollectionInterface>
+    public function setSource(string! source) -> <CollectionInterface>
     {
         let this->_source = source;
         return this;
@@ -418,15 +418,16 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
      * Returns a cloned collection
      *
      * @param \Scene\Mvc\CollectionInterface collection
-     * @param array document
+     * @param object document
      * @return \Scene\Mvc\CollectionInterface
      */
-    public static function cloneResult(<CollectionInterface> collection, array! document) -> <CollectionInterface>
+    public static function cloneResult(<CollectionInterface> collection, object! document) -> <CollectionInterface>
     {
         var clonedCollection, key, value;
-
+        
         let clonedCollection = clone collection;
-        for key, value in document {
+        
+        for key, value in get_object_vars(document) {
             clonedCollection->writeAttribute(key, value);
         }
 
@@ -714,9 +715,9 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
      *}
      *</code>
      *
-     * @param \Scene\Validation\ValidatorInterface validator
+     * @param \Scene\ValidationInterface validator
      */
-    protected function validate(<ValidatorInterface> validator)
+    protected function validate(<ValidationInterface> validator)
     {
         var messages, message;
         let messages = validator->validate(null, this);
@@ -830,7 +831,7 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
      */
     public function save()
     {
-        var dependencyInjector, source, data, exists, bulk, id, filter, options, disableEvents,
+        var dependencyInjector, source, data, update, exists, bulk, id, filter, options, disableEvents,
             success, result;
 
         let dependencyInjector = this->_dependencyInjector;
@@ -858,11 +859,11 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
         /**
          * Execute the preSave hook
          */
-        if this->_postSave(dependencyInjector, disableEvents, exists) === false {
-            return true;
+        if this->_preSave(dependencyInjector, disableEvents, exists) === false {
+            return false;
         }
 
-        let data = this->toArray();    
+        let data = this->toArray();
 
         let bulk = new BulkWrite();
 
@@ -872,9 +873,11 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
         } else {
             let this->_operationMade = self::OP_UPDATE;
 
-            let filter = ["_id": this->_id],
-                options = ["limit": 1, "upsert": false];
-            bulk->update(filter, data, options);
+            let filter = ["_id": this->_id];
+            let update = ["$set": data];
+            let options = ["multi": false, "upsert": false];
+
+            bulk->update(filter, update, options);
         }
 
         let success = false;
@@ -896,7 +899,7 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
         /**
          * Call the postSave hooks
          */
-        return this->_postSave(disableEvents, success, exists);       
+        return this->_postSave(disableEvents, success, exists);     
     }
 
     /**
@@ -916,10 +919,10 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
             throw new Exception("Method getSource() returns empty string");
         }
 
-        let update = this->toArray();
+        let update = ["$set": this->toArray()];
 
         if empty options {
-            let options = ["limit": 0, "upsert": false];
+            let options = ["multi": true, "upsert": false];
         }
 
         let bulk = new BulkWrite();

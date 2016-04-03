@@ -190,7 +190,7 @@ interface RouterInterface
     public function getParams() -> array;
 
     /**
-     * Returns the route that matchs the handled URI
+     * Returns the route that matches the handled URI
      *
      * @return \Scene\Mvc\Router\RouteInterface
      */
@@ -204,7 +204,7 @@ interface RouterInterface
     public function getMatches() -> array;
 
     /**
-     * Check if the router macthes any of the defined routes
+     * Check if the router matches any of the defined routes
      *
      * @return bool
      */
