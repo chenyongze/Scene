@@ -27,21 +27,21 @@ use Scene\Validation\Validator;
 use Scene\Validation\Message;
 
 /**
- * Scene\Validation\Validator\Alnum
+ * Scene\Validation\Validator\CreditCard
  *
- * Check for alphanumeric character(s)
+ * Checks if a value has a valid creditcard number
  *
  *<code>
- * use Scene\Validation\Validator\Alnum as AlnumValidator;
+ * use Scene\Validation\Validator\CreditCard as CreditCardValidator;
  *
- * $validator->add('username', new AlnumValidator(array(
- *    'message' => ':field must contain only alphanumeric characters'
+ * $validator->add('creditcard', new CreditCardValidator(array(
+ *    'message' => 'The credit card number is not valid'
  * )));
  *</code>
  */
-class Alnum extends Validator
+class CreditCard extends Validator
 {
-
+    
     /**
      * Executes the validation
      *
@@ -51,12 +51,14 @@ class Alnum extends Validator
      */
     public function validate(<Validation> validation, string! field) -> boolean
     {
-        var value, message, label, replacePairs;
+        var message, label, replacePairs, value, valid;
 
         let value = validation->getValue(field);
 
-        if !ctype_alnum(value) {
+        let valid = this->verifyByLuhnAlgorithm(value);
 
+        if !valid {
+            
             let label = this->getOption("label");
             if empty label {
                 let label = validation->getLabel(field);
@@ -65,13 +67,36 @@ class Alnum extends Validator
             let message = this->getOption("message");
             let replacePairs = [":field": label];
             if empty message {
-                let message = validation->getDefaultMessage("Alnum");
+                let message = validation->getDefaultMessage("CreditCard");
             }
 
-            validation->appendMessage(new Message(strtr(message, replacePairs), field, "Alnum", this->getOption("code")));
+            validation->appendMessage(new Message(strtr(message, replacePairs), field, "CreditCard", this->getOption("code")));
             return false;
         }
 
         return true;
+    }
+
+    /**
+     * is a simple checksum formula used to validate a variety of identification numbers
+     * 
+     * @param  string number
+     * @return boolean
+     */
+    private function verifyByLuhnAlgorithm(number) -> boolean
+    {
+        array digits;
+        let digits = (array) str_split(number);
+
+        var digit, position, hash = "";
+
+        for position, digit in digits->reversed() {
+            let hash .= (position % 2 ? digit * 2 : digit);
+        }
+
+        var result;
+        let result = array_sum(str_split(hash));
+
+        return (result % 10 == 0);
     }
 }

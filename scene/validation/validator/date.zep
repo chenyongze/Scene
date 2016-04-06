@@ -27,21 +27,22 @@ use Scene\Validation\Validator;
 use Scene\Validation\Message;
 
 /**
- * Scene\Validation\Validator\Alnum
+ * Scene\Validation\Validator\Date
  *
- * Check for alphanumeric character(s)
+ * Checks if a value is a valid date
  *
  *<code>
- * use Scene\Validation\Validator\Alnum as AlnumValidator;
+ * use Scene\Validation\Validator\Date as DateValidator;
  *
- * $validator->add('username', new AlnumValidator(array(
- *    'message' => ':field must contain only alphanumeric characters'
- * )));
+ * $validator->add('date', new DateValidator([
+ *     'format' => 'd-m-Y',
+ *     'message' => 'The date is invalid'
+ * ]));
  *</code>
  */
-class Alnum extends Validator
+class Date extends Validator
 {
-
+    
     /**
      * Executes the validation
      *
@@ -51,12 +52,17 @@ class Alnum extends Validator
      */
     public function validate(<Validation> validation, string! field) -> boolean
     {
-        var value, message, label, replacePairs;
+        var value, format, label, message, replacePairs;
 
         let value = validation->getValue(field);
+        let format = this->getOption("format");
 
-        if !ctype_alnum(value) {
+        if empty format {
+            let format = "Y-m-d";
+        }
 
+        if !this->checkDate(value, format) {
+            
             let label = this->getOption("label");
             if empty label {
                 let label = validation->getLabel(field);
@@ -65,10 +71,31 @@ class Alnum extends Validator
             let message = this->getOption("message");
             let replacePairs = [":field": label];
             if empty message {
-                let message = validation->getDefaultMessage("Alnum");
+                let message = validation->getDefaultMessage("Date");
             }
 
-            validation->appendMessage(new Message(strtr(message, replacePairs), field, "Alnum", this->getOption("code")));
+            validation->appendMessage(new Message(strtr(message, replacePairs), field, "Date", this->getOption("code")));
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Check out
+     */
+    private function checkDate(value, format) -> boolean
+    {
+        var date, errors;
+
+        if !is_string(value) {
+            return false;
+        }
+
+        let date = \DateTime::createFromFormat(format, value);
+        let errors = \DateTime::getLastErrors();
+
+        if errors["warning_count"] > 0 || errors["error_count"] > 0 {
             return false;
         }
 

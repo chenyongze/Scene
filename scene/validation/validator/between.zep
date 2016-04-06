@@ -23,23 +23,26 @@
 namespace Scene\Validation\Validator;
 
 use Scene\Validation;
-use Scene\Validation\Validator;
 use Scene\Validation\Message;
+use Scene\Validation\Validator;
 
 /**
- * Scene\Validation\Validator\Alnum
+ * Scene\Validation\Validator\Between
  *
- * Check for alphanumeric character(s)
+ * Validates that a value is between an inclusive range of two values.
+ * For a value x, the test is passed if minimum<=x<=maximum.
  *
  *<code>
- * use Scene\Validation\Validator\Alnum as AlnumValidator;
+ * use Scene\Validation\Validator\Between;
  *
- * $validator->add('username', new AlnumValidator(array(
- *    'message' => ':field must contain only alphanumeric characters'
+ * validator->add('name', new Between(array(
+ *    'minimum' => 0,
+ *    'maximum' => 100,
+ *    'message' => 'The price must be between 0 and 100'
  * )));
  *</code>
  */
-class Alnum extends Validator
+class Between extends Validator
 {
 
     /**
@@ -51,11 +54,13 @@ class Alnum extends Validator
      */
     public function validate(<Validation> validation, string! field) -> boolean
     {
-        var value, message, label, replacePairs;
+        var value, minimum, maximum, message, label, replacePairs;
 
-        let value = validation->getValue(field);
+        let value = validation->getValue(field),
+                minimum = this->getOption("minimum"),
+                maximum = this->getOption("maximum");
 
-        if !ctype_alnum(value) {
+        if value < minimum || value > maximum {
 
             let label = this->getOption("label");
             if empty label {
@@ -63,12 +68,12 @@ class Alnum extends Validator
             }
 
             let message = this->getOption("message");
-            let replacePairs = [":field": label];
+            let replacePairs = [":field": label, ":min": minimum, ":max": maximum];
             if empty message {
-                let message = validation->getDefaultMessage("Alnum");
+                let message = validation->getDefaultMessage("Between");
             }
 
-            validation->appendMessage(new Message(strtr(message, replacePairs), field, "Alnum", this->getOption("code")));
+            validation->appendMessage(new Message(strtr(message, replacePairs), field, "Between", this->getOption("code")));
             return false;
         }
 

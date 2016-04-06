@@ -23,23 +23,23 @@
 namespace Scene\Validation\Validator;
 
 use Scene\Validation;
-use Scene\Validation\Validator;
 use Scene\Validation\Message;
+use Scene\Validation\Validator;
 
 /**
- * Scene\Validation\Validator\Alnum
+ * Scene\Validation\Validator\Alpha
  *
- * Check for alphanumeric character(s)
+ * Check for alphabetic character(s)
  *
  *<code>
- * use Scene\Validation\Validator\Alnum as AlnumValidator;
+ * use Scene\Validation\Validator\Alpha as AlphaValidator;
  *
- * $validator->add('username', new AlnumValidator(array(
- *    'message' => ':field must contain only alphanumeric characters'
+ * $validator->add('username', new AlphaValidator(array(
+ *    'message' => ':field must contain only letters'
  * )));
  *</code>
  */
-class Alnum extends Validator
+class Alpha extends Validator
 {
 
     /**
@@ -55,7 +55,7 @@ class Alnum extends Validator
 
         let value = validation->getValue(field);
 
-        if !ctype_alnum(value) {
+        if !ctype_alpha(value) {
 
             let label = this->getOption("label");
             if empty label {
@@ -65,10 +65,10 @@ class Alnum extends Validator
             let message = this->getOption("message");
             let replacePairs = [":field": label];
             if empty message {
-                let message = validation->getDefaultMessage("Alnum");
+                let message = validation->getDefaultMessage("Alpha");
             }
 
-            validation->appendMessage(new Message(strtr(message, replacePairs), field, "Alnum", this->getOption("code")));
+            validation->appendMessage(new Message(strtr(message, replacePairs), field, "Alpha", this->getOption("code")));
             return false;
         }
 
