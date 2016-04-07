@@ -35,11 +35,11 @@ use Scene\Validation\Validator;
  *<code>
  * use Scene\Validation\Validator\Between;
  *
- * validator->add('name', new Between(array(
+ * validator->add('name', new Between([
  *    'minimum' => 0,
  *    'maximum' => 100,
  *    'message' => 'The price must be between 0 and 100'
- * )));
+ * ]));
  *</code>
  */
 class Between extends Validator

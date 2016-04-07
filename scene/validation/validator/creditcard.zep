@@ -34,9 +34,9 @@ use Scene\Validation\Message;
  *<code>
  * use Scene\Validation\Validator\CreditCard as CreditCardValidator;
  *
- * $validator->add('creditcard', new CreditCardValidator(array(
+ * $validator->add('creditcard', new CreditCardValidator([
  *    'message' => 'The credit card number is not valid'
- * )));
+ * ]));
  *</code>
  */
 class CreditCard extends Validator

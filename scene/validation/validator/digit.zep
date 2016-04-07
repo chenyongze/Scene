@@ -27,19 +27,19 @@ use Scene\Validation\Message;
 use Scene\Validation\Validator;
 
 /**
- * Scene\Validation\Validator\Alpha
+ * Scene\Validation\Validator\Digit
  *
- * Check for alphabetic character(s)
+ * Check for numeric character(s)
  *
  *<code>
- * use Scene\Validation\Validator\Alpha as AlphaValidator;
+ * use Scene\Validation\Validator\Digit as DigitValidator;
  *
- * $validator->add('username', new AlphaValidator([
- *    'message' => ':field must contain only letters'
+ * $validator->add('height', new DigitValidator([
+ *    'message' => ':field must be numeric'
  * ]));
  *</code>
  */
-class Alpha extends Validator
+class Digit extends Validator
 {
 
     /**
@@ -55,7 +55,7 @@ class Alpha extends Validator
 
         let value = validation->getValue(field);
 
-        if !ctype_alpha(value) {
+        if !ctype_digit(value) {
 
             let label = this->getOption("label");
             if empty label {
@@ -65,10 +65,10 @@ class Alpha extends Validator
             let message = this->getOption("message");
             let replacePairs = [":field": label];
             if empty message {
-                let message = validation->getDefaultMessage("Alpha");
+                let message = validation->getDefaultMessage("Digit");
             }
 
-            validation->appendMessage(new Message(strtr(message, replacePairs), field, "Alpha", this->getOption("code")));
+            validation->appendMessage(new Message(strtr(message, replacePairs), field, "Digit", this->getOption("code")));
             return false;
         }
 

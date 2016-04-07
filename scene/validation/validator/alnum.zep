@@ -34,9 +34,9 @@ use Scene\Validation\Message;
  *<code>
  * use Scene\Validation\Validator\Alnum as AlnumValidator;
  *
- * $validator->add('username', new AlnumValidator(array(
+ * $validator->add('username', new AlnumValidator([
  *    'message' => ':field must contain only alphanumeric characters'
- * )));
+ * ]));
  *</code>
  */
 class Alnum extends Validator

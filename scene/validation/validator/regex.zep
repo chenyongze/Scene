@@ -23,23 +23,24 @@
 namespace Scene\Validation\Validator;
 
 use Scene\Validation;
-use Scene\Validation\Message;
 use Scene\Validation\Validator;
+use Scene\Validation\Message;
 
 /**
- * Scene\Validation\Validator\Alpha
+ * Scene\Validation\Validator\Regex
  *
- * Check for alphabetic character(s)
+ * Allows validate if the value of a field matches a regular expression
  *
  *<code>
- * use Scene\Validation\Validator\Alpha as AlphaValidator;
+ *use Scene\Validation\Validator\Regex as RegexValidator;
  *
- * $validator->add('username', new AlphaValidator([
- *    'message' => ':field must contain only letters'
+ * $validator->add('created_at', new RegexValidator([
+ *    'pattern' => '/^[0-9]{4}[-\/](0[1-9]|1[12])[-\/](0[1-9]|[12][0-9]|3[01])$/',
+ *    'message' => 'The creation date is invalid'
  * ]));
  *</code>
  */
-class Alpha extends Validator
+class Regex extends Validator
 {
 
     /**
@@ -51,11 +52,22 @@ class Alpha extends Validator
      */
     public function validate(<Validation> validation, string! field) -> boolean
     {
-        var value, message, label, replacePairs;
+        var matches, failed, message, value, label, replacePairs;
 
+        /**
+         * Regular expression is set in the option 'pattern'
+         * Check if the value match using preg_match in the PHP userland
+         */
+        let matches = null;
         let value = validation->getValue(field);
 
-        if !ctype_alpha(value) {
+        if preg_match(this->getOption("pattern"), value, matches) {
+            let failed = matches[0] != value;
+        } else {
+            let failed = true;
+        }
+
+        if failed === true {
 
             let label = this->getOption("label");
             if empty label {
@@ -65,10 +77,10 @@ class Alpha extends Validator
             let message = this->getOption("message");
             let replacePairs = [":field": label];
             if empty message {
-                let message = validation->getDefaultMessage("Alpha");
+                let message = validation->getDefaultMessage("Regex");
             }
 
-            validation->appendMessage(new Message(strtr(message, replacePairs), field, "Alpha", this->getOption("code")));
+            validation->appendMessage(new Message(strtr(message, replacePairs), field, "Regex", this->getOption("code")));
             return false;
         }
 

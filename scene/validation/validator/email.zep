@@ -34,9 +34,9 @@ use Scene\Validation\Validator;
  *<code>
  *use Scene\Validation\Validator\Email as EmailValidator;
  *
- *$validator->add('email', new EmailValidator(array(
- *   'message' => 'The e-mail is not valid'
- *)));
+ * $validator->add('email', new EmailValidator([
+ *    'message' => 'The e-mail is not valid'
+ * ]));
  *</code>
  */
 class Email extends Validator

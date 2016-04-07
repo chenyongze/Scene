@@ -27,19 +27,19 @@ use Scene\Validation\Message;
 use Scene\Validation\Validator;
 
 /**
- * Scene\Validation\Validator\Alpha
+ * Scene\Validation\Validator\Numericality
  *
- * Check for alphabetic character(s)
+ * Check for a valid numeric value
  *
  *<code>
- * use Scene\Validation\Validator\Alpha as AlphaValidator;
+ * use Scene\Validation\Validator\Numericality;
  *
- * $validator->add('username', new AlphaValidator([
- *    'message' => ':field must contain only letters'
+ * $validator->add('price', new Numericality([
+ *    'message' => ':field is not numeric'
  * ]));
  *</code>
  */
-class Alpha extends Validator
+class Numericality extends Validator
 {
 
     /**
@@ -55,7 +55,7 @@ class Alpha extends Validator
 
         let value = validation->getValue(field);
 
-        if !ctype_alpha(value) {
+        if !preg_match("/^-?\d+\.?\d*$/", value) {
 
             let label = this->getOption("label");
             if empty label {
@@ -65,10 +65,10 @@ class Alpha extends Validator
             let message = this->getOption("message");
             let replacePairs = [":field": label];
             if empty message {
-                let message = validation->getDefaultMessage("Alpha");
+                let message = validation->getDefaultMessage("Numericality");
             }
 
-            validation->appendMessage(new Message(strtr(message, replacePairs), field, "Alpha", this->getOption("code")));
+            validation->appendMessage(new Message(strtr(message, replacePairs), field, "Numericality", this->getOption("code")));
             return false;
         }
 

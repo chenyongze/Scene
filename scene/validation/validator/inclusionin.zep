@@ -23,39 +23,61 @@
 namespace Scene\Validation\Validator;
 
 use Scene\Validation;
-use Scene\Validation\Message;
 use Scene\Validation\Validator;
+use Scene\Validation\Exception;
+use Scene\Validation\Message;
 
 /**
- * Scene\Validation\Validator\Alpha
+ * Scene\Validation\Validator\InclusionIn
  *
- * Check for alphabetic character(s)
+ * Check if a value is included into a list of values
  *
  *<code>
- * use Scene\Validation\Validator\Alpha as AlphaValidator;
+ *use Scene\Validation\Validator\InclusionIn;
  *
- * $validator->add('username', new AlphaValidator([
- *    'message' => ':field must contain only letters'
+ * $validator->add('status', new InclusionIn([
+ *    'message' => 'The status must be A or B',
+ *    'domain' => array('A', 'B')
  * ]));
  *</code>
  */
-class Alpha extends Validator
+class InclusionIn extends Validator
 {
 
     /**
      * Executes the validation
      *
-     * @param \Scene\Validation validation
-     * @param string field
+     * @param \Scene\Validation $validation
+     * @param string $field
      * @return boolean
      */
     public function validate(<Validation> validation, string! field) -> boolean
     {
-        var value, message, label, replacePairs;
+        var value, domain, message, label, replacePairs, strict;
 
         let value = validation->getValue(field);
 
-        if !ctype_alpha(value) {
+        /**
+         * A domain is an array with a list of valid values
+         */
+        let domain = this->getOption("domain");
+        if typeof domain != "array" {
+            throw new Exception("Option 'domain' must be an array");
+        }
+
+        let strict = false;
+        if this->hasOption("strict") {
+            if typeof strict != "boolean" {
+                throw new Exception("Option 'strict' must be a boolean");
+            }
+
+            let strict = this->getOption("strict");
+        }
+
+        /**
+         * Check if the value is contained by the array
+         */
+        if !in_array(value, domain, strict) {
 
             let label = this->getOption("label");
             if empty label {
@@ -63,12 +85,12 @@ class Alpha extends Validator
             }
 
             let message = this->getOption("message");
-            let replacePairs = [":field": label];
+            let replacePairs = [":field": label, ":domain":  join(", ", domain)];
             if empty message {
-                let message = validation->getDefaultMessage("Alpha");
+                let message = validation->getDefaultMessage("InclusionIn");
             }
 
-            validation->appendMessage(new Message(strtr(message, replacePairs), field, "Alpha", this->getOption("code")));
+            validation->appendMessage(new Message(strtr(message, replacePairs), field, "InclusionIn", this->getOption("code")));
             return false;
         }
 

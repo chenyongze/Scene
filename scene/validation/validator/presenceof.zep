@@ -27,19 +27,19 @@ use Scene\Validation\Message;
 use Scene\Validation\Validator;
 
 /**
- * Scene\Validation\Validator\Alpha
+ * Scene\Validation\Validator\PresenceOf
  *
- * Check for alphabetic character(s)
+ * Validates that a value is not null or empty string
  *
  *<code>
- * use Scene\Validation\Validator\Alpha as AlphaValidator;
+ * use Scene\Validation\Validator\PresenceOf;
  *
- * $validator->add('username', new AlphaValidator([
- *    'message' => ':field must contain only letters'
+ * $validator->add('name', new PresenceOf([
+ *    'message' => 'The name is required'
  * ]));
  *</code>
  */
-class Alpha extends Validator
+class PresenceOf extends Validator
 {
 
     /**
@@ -54,8 +54,8 @@ class Alpha extends Validator
         var value, message, label, replacePairs;
 
         let value = validation->getValue(field);
-
-        if !ctype_alpha(value) {
+        
+        if value === null || value === "" {
 
             let label = this->getOption("label");
             if empty label {
@@ -65,10 +65,10 @@ class Alpha extends Validator
             let message = this->getOption("message");
             let replacePairs = [":field": label];
             if empty message {
-                let message = validation->getDefaultMessage("Alpha");
+                let message = validation->getDefaultMessage("PresenceOf");
             }
 
-            validation->appendMessage(new Message(strtr(message, replacePairs), field, "Alpha", this->getOption("code")));
+            validation->appendMessage(new Message(strtr(message, replacePairs), field, "PresenceOf", this->getOption("code")));
             return false;
         }
 

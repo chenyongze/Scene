@@ -27,19 +27,21 @@ use Scene\Validation\Message;
 use Scene\Validation\Validator;
 
 /**
- * Scene\Validation\Validator\Alpha
+ * Scene\Validation\Validator\Identical
  *
- * Check for alphabetic character(s)
+ * Checks if a value is identical to other
  *
  *<code>
- * use Scene\Validation\Validator\Alpha as AlphaValidator;
+ * use Scene\Validation\Validator\Identical;
  *
- * $validator->add('username', new AlphaValidator([
- *    'message' => ':field must contain only letters'
+ * $validator->add('terms', new Identical([
+ *    'accepted' => 'yes',
+ *    'message' => 'Terms and conditions must be accepted'
  * ]));
  *</code>
+ *
  */
-class Alpha extends Validator
+class Identical extends Validator
 {
 
     /**
@@ -51,11 +53,19 @@ class Alpha extends Validator
      */
     public function validate(<Validation> validation, string! field) -> boolean
     {
-        var value, message, label, replacePairs;
+        var message, label, replacePairs, value, valid;
 
         let value = validation->getValue(field);
 
-        if !ctype_alpha(value) {
+        if this->hasOption("accepted") {
+            let valid = value == this->getOption("accepted");
+        } else {
+            if this->hasOption("value") {
+                let valid = value == this->getOption("value");
+            }
+        }
+
+        if !valid {
 
             let label = this->getOption("label");
             if empty label {
@@ -65,10 +75,10 @@ class Alpha extends Validator
             let message = this->getOption("message");
             let replacePairs = [":field": label];
             if empty message {
-                let message = validation->getDefaultMessage("Alpha");
+                let message = validation->getDefaultMessage("Identical");
             }
 
-            validation->appendMessage(new Message(strtr(message, replacePairs), field, "Alpha", this->getOption("code")));
+            validation->appendMessage(new Message(strtr(message, replacePairs), field, "Identical", this->getOption("code")));
             return false;
         }
 
