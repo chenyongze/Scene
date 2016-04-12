@@ -505,11 +505,7 @@ class Client
         if method !== Method::GET {
             curl_setopt(this->_handle, CURLOPT_CUSTOMREQUEST, method);
 
-            if typeof body == "array" || body instanceof \Traversable {
-                curl_setopt(this->_handle, CURLOPT_POSTFIELDS, this->buildHTTPCurlQuery(body));
-            } else {
-                curl_setopt(this->_handle, CURLOPT_POSTFIELDS, body);
-            }
+            curl_setopt(this->_handle, CURLOPT_POSTFIELDS, body);
         } elseif typeof body == "array" {
             if strpos(url, "?") !== false {
                 let url .= "&";
@@ -616,14 +612,14 @@ class Client
 
         let formattedHeaders = [];
 
-        let combinedHeaders = array_change_key_case(array_merge((array) headers, this->_defaultHeaders));
+        let combinedHeaders = array_change_key_case(array_merge(this->_defaultHeaders, (array) headers));
 
         for key, value in combinedHeaders {
             let formattedHeaders[] = this->_getHeaderString(key, value);
         }
 
         if !array_key_exists("user-agent", combinedHeaders) {
-            let formattedHeaders[] = "user-agent: scene/0.1";
+            let formattedHeaders[] = "user-agent: scene/0.1.0";
         }
 
         if !array_key_exists("expect", combinedHeaders) {
