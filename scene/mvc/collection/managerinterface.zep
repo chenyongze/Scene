@@ -102,22 +102,6 @@ interface ManagerInterface
     public function getConnection(<CollectionInterface> collection);
 
     /**
-     * Sets if a collection must use implicit objects ids
-     *
-     * @param \Scene\Mvc\CollectionInterface collection
-     * @param boolean useImplicitObjectIds
-     */
-    public function useImplicitObjectIds(<CollectionInterface> collection, boolean useImplicitObjectIds);
-
-    /**
-     * Checks if a collection is using implicit object ids
-     *
-     * @param \Scene\Mvc\CollectionInterface collection
-     * @return boolean
-     */
-    public function isUsingImplicitObjectIds(<CollectionInterface> collection) -> boolean;
-
-    /**
      * Receives events generated in the collections and dispatches them to a events-manager if available
      * Notify the behaviors that are listening in the collection
      *

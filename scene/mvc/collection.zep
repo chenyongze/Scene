@@ -378,42 +378,6 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
         let this->{attribute} = value;
     }
 
-        /**
-     * Sets a value for the _id property, creates a MongoId object if needed
-     *
-     * @param mixed id
-     */
-    public function setId(id)
-    {
-        var oid;
-
-        if typeof id != "object" {
-
-            /**
-             * Check if the model use implicit ids
-             */
-            if this->_collectionManager->isUsingImplicitObjectIds(this) {
-                let oid = new ObjectId(id);
-            } else {
-                let oid = id;
-            }
-
-        } else {
-            let oid = id;
-        }
-        let this->_id = oid;
-    }
-
-    /**
-     * Returns the value of the _id property
-     *
-     * @return \MongoId|mixed
-     */
-    public function getId()
-    {
-        return this->_id;
-    }
-
     /**
      * Returns a cloned collection
      *
@@ -757,29 +721,18 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
      * Find a document by its id (_id)
      *
      * @param string|\MongoDB\BSON\ObjectId id
+     * @param array options
      * @return \Scene\Mvc\CollectionInterface
      * @throws Exception
      */
-    public static function findById(var id) {
-        var className, collection, oid, filter, options;
+    public static function findById(var id, array options = []) {
+        var className, collection, id, filter, options;
 
         let className = get_called_class(),
             collection = new {className}();
 
-        if typeof id !== "object" {
-
-            /**
-             * Check if the model use implicit ids
-             */
-            if collection->getCollectionManager()->isUsingImplicitObjectIds(collection) {
-                let oid = new ObjectId(id);
-            } else {
-                let oid = id;
-            }
-        }
-
-        let filter = ["id": oid],
-            options = ["limit": 1];
+        let filter = ["_id": id],
+            options = array_merge(options, ["limit": 1]);
 
         return static::_getResultset(filter, options, collection, true);
 
@@ -831,7 +784,7 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
      */
     public function save()
     {
-        var dependencyInjector, source, data, update, exists, bulk, id, filter, options, disableEvents,
+        var dependencyInjector, source, data, exists, bulk, filter, options, disableEvents,
             success, result;
 
         let dependencyInjector = this->_dependencyInjector;
@@ -863,21 +816,21 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
             return false;
         }
 
-        let data = this->toArray();
-
         let bulk = new BulkWrite();
 
         if !exists {
             let this->_operationMade = self::OP_CREATE;
-            let id = bulk->insert(data);
+            
+            let this->_id = (string) new ObjectId();
+            bulk->insert(this->toArray());
         } else {
             let this->_operationMade = self::OP_UPDATE;
 
             let filter = ["_id": this->_id];
-            let update = ["$set": data];
+            let data = ["$set": this->toArray()];
             let options = ["multi": false, "upsert": false];
 
-            bulk->update(filter, update, options);
+            bulk->update(filter, data, options);
         }
 
         let success = false;
@@ -888,7 +841,6 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
 
             if !exists {
                 if result->getInsertedCount() > 0 {
-                    let this->_id = id;
                     let success = true;
                 }
             } else {
@@ -956,7 +908,7 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
      */
     public function delete() -> boolean
     {
-        var id, disableEvents, source, oid, success, filter, options, bulk, result;
+        var id, disableEvents, source, success, filter, options, bulk, result;
         
         if !fetch id, this->_id {
             throw new Exception("The document cannot be deleted because it doesn't exist");
@@ -979,24 +931,10 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
             throw new Exception("Method getSource() returns empty string");
         }
 
-        if typeof id == "object" {
-            let oid = id;
-        } else {
-
-            /**
-             * Is the collection using implicit object Ids?
-             */
-            if this->_collectionManager->isUsingImplicitObjectIds(this) {
-                let oid = new ObjectId(id);
-            } else {
-                let oid = id;
-            }
-        }
-
         let success = false;
 
         // Specify the search criteria
-        let filter = ["_id": oid];
+        let filter = ["_id": id];
 
         /* Specify some command options for the update:
          *
@@ -1136,30 +1074,16 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
      */
     protected function _exists(<CollectionInterface> collection) -> boolean
     {
-        var id, oid;
+        var id;
 
         if !fetch id, collection->_id {
             return false;
         }
 
-        if typeof id == "object" {
-            let oid = id;
-        } else {
-
-            /**
-             * Check if the model use implicit ids
-             */
-            if this->_collectionManager->isUsingImplicitObjectIds(this) {
-                let oid = new ObjectId(id);
-            } else {
-                let oid = id;
-            }
-        }
-
         /**
          * Perform the count using the function provided by the driver
          */
-        return collection->count(["_id": oid]) > 0;
+        return collection->count(["_id": id]) > 0;
     }
 
     /**

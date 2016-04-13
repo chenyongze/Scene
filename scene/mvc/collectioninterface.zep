@@ -34,20 +34,6 @@ interface CollectionInterface
 {
 
     /**
-     * Sets a value for the _id propery, creates a MongoId object if needed
-     *
-     * @param mixed id
-     */
-    public function setId(id);
-
-    /**
-     * Returns the value of the _id property
-     *
-     * @return MongoId
-     */
-    public function getId();
-
-    /**
      * Returns an array with reserved properties that cannot be part of the insert/update
      *
      * @return array

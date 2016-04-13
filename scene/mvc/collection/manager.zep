@@ -290,37 +290,6 @@ class Manager implements ManagerInterface, InjectionAwareInterface, EventsAwareI
     }
 
     /**
-     * Sets whether a collection must use implicit objects ids
-     *
-     * @param \Scene\Mvc\CollectionInterface collection
-     * @param boolean useImplicitObjectIds
-     */
-    public function useImplicitObjectIds(<CollectionInterface> collection, boolean useImplicitObjectIds) -> void
-    {
-        let this->_implicitObjectsIds[get_class_lower(collection)] = useImplicitObjectIds;
-    }
-
-    /**
-     * Checks if a collection is using implicit object ids
-     *
-     * @param \Scene\Mvc\CollectionInterface collection
-     * @return boolean
-     */
-    public function isUsingImplicitObjectIds(<CollectionInterface> collection) -> boolean
-    {
-        var implicit;
-
-        /**
-         * All collections use by default are using implicit object ids
-         */
-        if fetch implicit, this->_implicitObjectsIds[get_class_lower(collection)] {
-            return implicit;
-        }
-
-        return true;
-    }
-
-    /**
      * Executes query on a server
      * 
      * @param  \Scene\Mvc\CollectionInterface collection
