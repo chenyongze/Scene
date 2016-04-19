@@ -1,6 +1,6 @@
 {
     "namespace": "scene",
-    "name": "scene",
+    "name": "Scene",
     "description": "Scene is a fast php framework.",
     "author": "DangCheng",
     "version": "0.1.0",
