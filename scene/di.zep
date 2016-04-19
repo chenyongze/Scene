@@ -399,7 +399,7 @@ class Di implements DiInterface
      * Allows to register a shared service using the array syntax
      *
      *<code>
-     *  $di["request"] = new \Phalcon\Http\Request();
+     *  $di["request"] = new \Scene\Http\Request();
      *</code>
      *
      * @param string name
