@@ -96,6 +96,8 @@ class Random
      *  $random = new \Scene\Security\Random();
      *
      *  $bytes = $random->bytes();
+     *  var_dump(bin2hex($bytes));
+     *  // possible output: string(32) "00f6c04b144b41fad6a59111c126e1ee"
      *</code>
      *
      * @param int len
@@ -107,6 +109,10 @@ class Random
 
         if len <= 0 {
             let len = 16;
+        }
+
+        if function_exists("random_bytes") {
+            return random_bytes(len);
         }
 
         if function_exists("openssl_random_pseudo_bytes") {

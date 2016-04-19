@@ -59,7 +59,7 @@ class Validation extends Injectable implements ValidationInterface
      * @var null|array
      * @access protected
     */
-    protected _validators { set };
+    protected _validators = [] { set };
 
     /**
      * Filters
