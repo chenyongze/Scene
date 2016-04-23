@@ -58,7 +58,6 @@
         "extensions": []
     },
     "prototype-dir": {
-        "mongodb": "prototypes/mongodb",
-        "php7"   : "prototypes/php7"
+        "mongodb": "prototypes/mongodb"
     }
 }
