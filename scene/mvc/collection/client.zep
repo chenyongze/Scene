@@ -22,6 +22,7 @@
 
 namespace Scene\Mvc\Collection;
 
+use MongoDB\Driver\Manager as mongoManager;
 use MongoDB\Driver\WriteConcern;
 use MongoDB\Driver\ReadPreference;
 
@@ -85,7 +86,7 @@ class Client
      */
     public function __construct(string! uri = "mongodb://localhost:27017", array options = [], array driverOptions = [])
     {
-    	let this->_manager = new \MongoDB\Driver\Manager(uri, options, driverOptions);
+    	let this->_manager = new mongoManager(uri, options, driverOptions);
     	let this->_uri = uri;
     }
 

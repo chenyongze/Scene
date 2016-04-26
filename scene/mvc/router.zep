@@ -865,7 +865,7 @@ class Router implements InjectionAwareInterface, RouterInterface, EventsAwareInt
      *
      * @param string pattern
      * @param mixed paths
-     * @param string|null httpMethods
+     * @param string|array|null httpMethods
      * @return \Scene\Mvc\Router\RouteInterface
      * 
      */

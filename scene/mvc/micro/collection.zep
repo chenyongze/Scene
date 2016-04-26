@@ -85,7 +85,7 @@ class Collection implements CollectionInterface
 	 * @param mixed handler
 	 * @param string name
 	 */
-	protected function _addMap(string! method, var routePattern, var handler, var name)
+	protected function _addMap(var method, var routePattern, var handler, var name)
 	{
 		let this->_handlers[] = [method, routePattern, handler, name];
 	}
@@ -165,6 +165,25 @@ class Collection implements CollectionInterface
 	public function getHandler()
 	{
 		return this->_handler;
+	}
+
+	/**
+     * Via a route to a handler
+     *
+     * @param string|array httpMethods
+     * @param string routePattern
+     * @param callable handler
+     * @param string name
+     * @return \Scene\Mvc\Micro\CollectionInterface
+     */
+	public function via(var httpMethods, string! routePattern, var handler, var name = null) -> <CollectionInterface>
+	{
+		if typeof httpMethods != "string" && typeof httpMethods != "array" {
+			throw new Exception("Invalid parameter type.");
+		}
+
+		this->_addMap(httpMethods, routePattern, handler, name);
+		return this;
 	}
 
 	/**
