@@ -158,7 +158,7 @@ class Filter implements FilterInterface
             /**
              * If the filter is a closure we call it in the PHP userland
              */
-            if filterObject instanceof \Closure || is_callable(filterObject) {
+            if (typeof filterObject == "object" && filterObject instanceof \Closure) || is_callable(filterObject) {
                 return call_user_func_array(filterObject, [value]);
             }
 

@@ -299,6 +299,10 @@ class Random
             throw new Exception("Require a positive integer > 0");
         }
 
+        if (function_exists("random_int")) {
+            return random_int(0, len);
+        }
+
         let hex = dechex(len);
 
         if (strlen(hex) & 1) == 1 {
