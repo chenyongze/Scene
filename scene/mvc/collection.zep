@@ -431,7 +431,7 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
             return null;
         }
 
-        if (isset(options["fields"]) && options["fields"]) {
+        if (isset(options["simple"]) && options["simple"]) {
             
             if (unique === true) {
                 return result[0];

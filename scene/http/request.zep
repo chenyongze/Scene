@@ -83,6 +83,14 @@ class Request implements RequestInterface, InjectionAwareInterface
     protected _putCache;
 
     /**
+     * Json Cache
+     * 
+     * @var null|array
+     * @access protected
+     */
+    protected _jsonCache;
+
+    /**
      *  Http Method Parameter Override
      * 
      * @type boolean
@@ -227,6 +235,41 @@ class Request implements RequestInterface, InjectionAwareInterface
     public function getQuery(string! name = null, var filters = null, var defaultValue = null, boolean notAllowEmpty = false, boolean noRecursive = false)
     {
         return this->getHelper(_GET, name, filters, defaultValue, notAllowEmpty, noRecursive);
+    }
+
+    /**
+     * Gets a variable from application/json
+     *
+     *<code>
+     *  //Returns value from json without sanitizing
+     *  $id = $request->getJson("id");
+     *
+     *  //Returns value from json with sanitizing
+     *  $id = $request->getJson("id", "int");
+     *
+     *  //Returns value from json with a default value
+     *  $id = $request->getJson("id", null, 150);
+     *</code>
+     *
+     * @param string|null name
+     * @param string|array|null filters
+     * @param mixed defaultValue
+     * @param boolean notAllowEmpty
+     * @param boolean noRecursive
+     * @return mixed
+     */
+    public function getJson(string! name = null, var filters = null, var defaultValue = null, boolean notAllowEmpty = false, boolean noRecursive = false)
+    {
+        var json;
+
+        let json = this->_jsonCache;
+
+        if typeof json != "array" {
+            let json = this->getJsonRawBody(true);
+            let this->_jsonCache = json;
+        }
+
+        return this->getHelper(json, name, filters, defaultValue, notAllowEmpty, noRecursive);
     }
 
     /**
