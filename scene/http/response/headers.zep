@@ -105,11 +105,7 @@ class Headers implements HeadersInterface
                 if value !== null {                 
                     header(header . ": " . value, true);
                 } else {
-                    if memstr(header, ":") {
-                        header(header, true);
-                    } else {
-                        header(header . ": ", true);
-                    }
+                    header(header, true);
                 }
             }
             return true;
