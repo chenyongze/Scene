@@ -118,6 +118,16 @@ class Dispatcher extends BaseDispatcher implements DispatcherInterface
     }
 
     /**
+     * Gets previous dispatched namespace name
+     *
+     * @return string
+     */
+    public function getPreviousNamespaceName() -> string
+    {
+        return this->_previousNamespaceName;
+    }
+
+    /**
      * Gets previous dispatched controller name
      *
      * @return string

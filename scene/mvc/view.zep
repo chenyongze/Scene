@@ -1091,8 +1091,11 @@ class View extends Injectable implements ViewInterface
 
         /**
          * Create a virtual symbol table
+         * Variables are shared across symbol tables in PHP5
          */
-        create_symbol_table();
+        if is_php_version("5") {
+            create_symbol_table();
+        }
 
         /**
          * Call beforeRender if there is an events manager

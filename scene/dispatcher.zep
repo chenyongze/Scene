@@ -219,6 +219,14 @@ abstract class Dispatcher implements DispatcherInterface, InjectionAwareInterfac
     protected _actionSuffix = "Action";
 
     /**
+     * Previous Namespace Name
+     * 
+     * @var string
+     * @access protected
+     */
+    protected _previousNamespaceName = null;
+
+    /**
      * Previous Handler Name
      *
      * @var string
@@ -847,7 +855,8 @@ abstract class Dispatcher implements DispatcherInterface, InjectionAwareInterfac
 
         // Check if we need to forward to another namespace
         if fetch namespaceName, forward["namespace"] {
-            let this->_namespaceName = namespaceName;
+            let this->_previousNamespaceName = this->_namespaceName,
+                this->_namespaceName = namespaceName;
         }
 
         // Check if we need to forward to another controller

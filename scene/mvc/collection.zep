@@ -30,6 +30,7 @@ use Scene\Mvc\Collection\Exception;
 use Scene\Mvc\Collection\Message;
 use Scene\Mvc\Collection\MessageInterface;
 use Scene\ValidationInterface;
+use Scene\Validation\Message\Group;
 use Scene\Events\ManagerInterface as EventsManagerInterface;
 use MongoDB\Driver\BulkWrite;
 use MongoDB\Driver\Query;
@@ -688,7 +689,10 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
 
         // Call the validation, if it returns not the boolean we append the messages to the current object
         if typeof messages != "boolean" {
-            for message in iterator(messages) {
+            // for message in iterator(messages) {
+            messages->rewind();
+            while messages->valid() {
+                let message = messages->current();
                 this->appendMessage(new Message(message->getMessage(), message->getField(), message->getType()));
             }
 
