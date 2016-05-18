@@ -180,8 +180,9 @@ class Crypt implements CryptInterface
      * @param srting mode
      * @param int blockSize
      * @param int paddingType
+     * @return string
      */
-    protected function _cryptPadText(string text, string! mode, int! blockSize, int! paddingType)
+    protected function _cryptPadText(string text, string! mode, int! blockSize, int! paddingType) -> string
     {
         int i;
         var paddingSize = 0, padding = null;
@@ -249,6 +250,7 @@ class Crypt implements CryptInterface
      * @param mode Encryption mode; unpadding is applied only in CBC or ECB mode
      * @param block_size Cipher block size
      * @param padding_type Padding scheme
+     * @return string
      */
     protected function _cryptUnpadText(string text, string! mode, int! blockSize, int! paddingType)
     {

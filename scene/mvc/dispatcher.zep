@@ -153,7 +153,6 @@ class Dispatcher extends BaseDispatcher implements DispatcherInterface
      * @param string $message
      * @param int $exceptionCode
      * @return boolean|null
-     * @throws Exception
      */
     protected function _throwDispatchException(string! message, int exceptionCode = 0)
     {
@@ -193,7 +192,6 @@ class Dispatcher extends BaseDispatcher implements DispatcherInterface
      * Handles a user exception
      *
      * @param \Exception $exception
-     * @throws Exception
      * @return boolean|null
      */
     protected function _handleException(<\Exception> exception)

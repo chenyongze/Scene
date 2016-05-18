@@ -118,6 +118,7 @@ class Di implements DiInterface
 
      /**
      * Sets the internal event manager
+     * 
      * @param Scene\Events\ManagerInterface eventsManager
      */
     public function setInternalEventsManager(<ManagerInterface> eventsManager)
@@ -127,6 +128,7 @@ class Di implements DiInterface
 
     /**
      * Returns the internal event manager
+     * 
      * @return Scene\Events\ManagerInterface
      */
     public function getInternalEventsManager() -> <ManagerInterface>
