@@ -186,7 +186,7 @@ class Di implements DiInterface
      * @param boolean shared
      * @return \Scene\Di\ServiceInterface|boolean
      */
-    public function attempt(string! name, definition, boolean shared = false) -> <ServiceInterface> | boolean
+    public function attempt(string! name, var definition, boolean shared = false) -> <ServiceInterface> | boolean
     {
         var service;
 

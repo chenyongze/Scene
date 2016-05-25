@@ -230,7 +230,7 @@ abstract class Collection implements CollectionInterface, EntityInterface, Injec
     /**
      * Sets a custom events manager
      *
-     *  @param \Scene\Events\ManagerInterface eventsManager
+     * @param \Scene\Events\ManagerInterface eventsManager
      */
     protected function setEventsManager(<EventsManagerInterface> eventsManager)
     {
