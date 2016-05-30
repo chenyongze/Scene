@@ -386,6 +386,21 @@ class Request implements RequestInterface, InjectionAwareInterface
     }
 
     /**
+     * Checks whether the application/json data has certain index
+     *
+     * @param string name
+     * @return boolean
+     */
+    public function hasJson(string! name) -> boolean
+    {
+        var json;
+
+        let json = this->getJson();
+
+        return isset json[name];
+    }
+
+    /**
      * Checks whether $_SERVER superglobal has certain index
      *
      * @param string name
