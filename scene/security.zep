@@ -586,11 +586,13 @@ class Security implements InjectionAwareInterface
     /**
      * Sets the default hash
      *
-     * @param int $defaultHash
+     * @param int defaultHash
      */
-    public function setDefaultHash(int defaultHash)
+    public function setDefaultHash(int defaultHash) -> <security>
     {
         let this->_defaultHash = defaultHash;
+
+        return this;
     }
 
     /**

@@ -309,7 +309,7 @@ class Application extends BaseApplication
          */
         let possibleResponse = dispatcher->getReturnedValue();
 
-        if typeof possibleResponse == "boolean" && possibleResponse == false {
+        if typeof possibleResponse == "boolean" && possibleResponse === false {
             let response = <ResponseInterface> dependencyInjector->getShared("response");
         } else {
             

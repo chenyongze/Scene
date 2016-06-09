@@ -144,12 +144,13 @@ class Redis extends Adapter
      *  $session->write('auth', 'yes');
      *</code>
      *
-     * @param string $sessionId
-     * @param mixed $data
+     * @param string sessionId
+     * @param mixed data
+     * @return mixed
      */
     public function write(string sessionId, string data)
     {
-        this->_redis->save(sessionId, data, this->_lifetime);
+        return this->_redis->save(sessionId, data, this->_lifetime);
     }
 
     /**
@@ -159,7 +160,7 @@ class Redis extends Adapter
      *  $session->destroy('auth');
      *</code>
      *
-     * @param string $sessionId
+     * @param string sessionId
      * @return boolean
      */
     public function destroy(string sessionId = null) -> boolean
