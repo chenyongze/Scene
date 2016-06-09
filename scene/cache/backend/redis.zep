@@ -152,7 +152,7 @@ class Redis extends Backend implements BackendInterface
      * @param long lifetime
      * @return mixed
      */
-    public function get(keyName, lifetime = null)
+    public function get(keyName, lifetime = null) -> var | null
     {
         var redis, frontend, prefix, lastKey, cachedContent;
 
@@ -276,7 +276,7 @@ class Redis extends Backend implements BackendInterface
      * @param int|string keyName
      * @return boolean
      */
-    public function delete(keyName)
+    public function delete(keyName) -> boolean
     {
         var redis, prefix, prefixedKey, lastKey, options, specialKey;
 
@@ -302,7 +302,7 @@ class Redis extends Backend implements BackendInterface
         /**
         * Delete the key from redis
         */
-        return redis->delete(lastKey);
+        return (bool) redis->delete(lastKey);
     }
 
     /**
@@ -341,9 +341,11 @@ class Redis extends Backend implements BackendInterface
                     unset(keys[key]);
                 }
             }
+
+            return keys;
         }
 
-        return keys;
+        return [];     
     }
 
     /**
@@ -387,7 +389,7 @@ class Redis extends Backend implements BackendInterface
      * @param  long value
      * @return long
      */
-    public function increment(keyName = null, value = null)
+    public function increment(keyName = null, value = null) -> int
     {
         var redis, prefix, lastKey;
 
@@ -419,7 +421,7 @@ class Redis extends Backend implements BackendInterface
      * @param  long value
      * @return long
      */
-    public function decrement(keyName = null, value = null)
+    public function decrement(keyName = null, value = null) -> int
     {
         var redis, prefix, lastKey;
 
