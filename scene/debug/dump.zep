@@ -22,6 +22,8 @@
 
 namespace Scene\Debug;
 
+use Scene\Di;
+
 /**
  * Scene\Debug\Dump
  *
@@ -52,8 +54,8 @@ class Dump
      * Scene\Debug\Dump constructor
      *
      * @param boolean detailed debug object's private and protected properties
-     * @param array $styles
-     * @param boolean $detailed
+     * @param array styles
+     * @param boolean detailed
      */
     public function __construct(array styles = null, boolean detailed = false)
     {
@@ -178,12 +180,17 @@ class Dump
             }
             let output .= " (\n";
 
-            if !this->_detailed {
+            if variable instanceof Di {
+                // Skip debuging di
+                let output .= str_repeat(space, tab) . "[skipped]\n";
+            } elseif !this->_detailed {
+                // Debug only public properties
                 for key, value in get_object_vars(variable) {
                     let output .= str_repeat(space, tab) . strtr("-><span style=':style'>:key</span> (<span style=':style'>:type</span>) = ", [":style": this->getStyle("obj"), ":key": key, ":type": "public"]);
                     let output .= this->output(value, "", tab + 1) . "\n";
                 }
             } else {
+                // Debug all properties
                 do {
 
                     let attr = each(variable);
@@ -198,7 +205,7 @@ class Dump
                     if !key {
                         continue;
                     }
-                    let key = explode(chr(ord("\x00")), key),
+                    let key = explode(chr(0), key),
                         type = "public";
 
                     if isset key[1] {
