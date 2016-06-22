@@ -261,7 +261,7 @@ class Config implements \ArrayAccess, \Countable
                 }
             }
 
-            if typeof key == "integer" {
+            if is_numeric(key) {
                 let key = strval(number),
                     number++;
             }

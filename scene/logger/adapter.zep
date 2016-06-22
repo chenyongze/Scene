@@ -140,6 +140,9 @@ abstract class Adapter
             );
         }
 
+        // clear logger queue at commit
+        let this->_queue = [];
+
         return this;
     }
 
