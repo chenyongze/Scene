@@ -603,14 +603,14 @@ class Router implements InjectionAwareInterface, RouterInterface, EventsAwareInt
                 /**
                  * Check if the current hostname is the same as the route
                  */
-                if typeof currentHostName != "object" {
+                if typeof currentHostName == "null" {
                     let currentHostName = request->getHttpHost();
                 }
 
                 /**
                  * No HTTP_HOST, maybe in CLI mode?
                  */
-                if typeof currentHostName == "null" {
+                if !currentHostName {
                     continue;
                 }
 
